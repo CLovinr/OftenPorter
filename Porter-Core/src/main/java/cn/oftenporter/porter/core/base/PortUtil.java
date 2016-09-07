@@ -3,13 +3,16 @@ package cn.oftenporter.porter.core.base;
 
 import cn.oftenporter.porter.core.annotation.Parser;
 import cn.oftenporter.porter.core.annotation.PortIn;
+import cn.oftenporter.porter.core.annotation.PortInObj;
 import cn.oftenporter.porter.core.exception.InitException;
 import cn.oftenporter.porter.core.util.WPTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -81,7 +84,7 @@ public class PortUtil
         return tiedName;
     }
 
-    public static PortMethod method(PortMethod classMethod, PortMethod funMethod)
+    static PortMethod method(PortMethod classMethod, PortMethod funMethod)
     {
         if (classMethod == PortMethod.DEFAULT && funMethod == PortMethod.DEFAULT)
         {
@@ -96,7 +99,7 @@ public class PortUtil
     }
 
 
-    public static void addTypeParser(Map<String, String> parsersVarAndType, Parser parser,
+    static void addTypeParser(Map<String, String> parsersVarAndType, Parser parser,
             TypeParserStore typeParserStore)
     {
         Parser.parse[] parses = parser.value();
@@ -106,7 +109,7 @@ public class PortUtil
         }
     }
 
-    public static void addTypeParser(Map<String, String> parsersVarAndType, Parser.parse parse,
+    static void addTypeParser(Map<String, String> parsersVarAndType, Parser.parse parse,
             TypeParserStore typeParserStore)
     {
 
@@ -196,7 +199,7 @@ public class PortUtil
 
     }
 
-    public static void addCheckPassable(Map<Class<?>, CheckPassable> checkPassableMap,
+    static void addCheckPassable(Map<Class<?>, CheckPassable> checkPassableMap,
             Class<? extends CheckPassable>[] checks)
     {
         for (int i = 0; i < checks.length; i++)
@@ -232,5 +235,64 @@ public class PortUtil
             return new Object[names.length];
         }
     }
+
+    static WPortInObj dealPortInObj(Method method)
+    {
+        WPortInObj wPortInObj = null;
+
+        if (method.isAnnotationPresent(PortInObj.class))
+        {
+            PortInObj portInObj = method.getAnnotation(PortInObj.class);
+            boolean defaultNecessary = portInObj.defaultNecessary();
+            Class<?>[] types = portInObj.types();
+            WPortInObj.One[] ones = new WPortInObj.One[types.length];
+            for (int i = 0; i < types.length; i++)
+            {
+                ones[i] = buildOne(defaultNecessary, types[i]);
+            }
+            wPortInObj = new WPortInObj(ones);
+        }
+
+        return wPortInObj;
+    }
+
+    private static WPortInObj.One buildOne(boolean defaultNecessary, Class<?> clazz)
+    {
+        WPortInObj.One one;
+        if (Modifier.isAbstract(clazz.getModifiers()))
+        {
+            throw new RuntimeException("abstract class is not supported!(" + clazz + ")");
+        } else if (Modifier.isInterface(clazz.getModifiers()))
+        {
+            throw new RuntimeException("stub!");
+        } else
+        {
+            Field[] fields = clazz.getDeclaredFields();
+            List<Field> neces = new ArrayList<>();
+            List<String> neceNames = new ArrayList<>();
+            List<Field> unneces = new ArrayList<>();
+            List<String> unneceNames = new ArrayList<>();
+            for (int i = 0; i < fields.length; i++)
+            {
+                Field field = fields[i];
+                if (field.isAnnotationPresent(PortInObj.InNece.class))
+                {
+                    field.setAccessible(true);
+                    neces.add(field);
+                    neceNames.add(field.getName());
+                } else if (field.isAnnotationPresent(PortInObj.InUnNece.class))
+                {
+                    field.setAccessible(true);
+                    unneces.add(field);
+                    unneceNames.add(field.getName());
+                }
+            }
+            one = new WPortInObj.One(clazz,
+                    new InNames(neceNames.toArray(new String[0]), unneceNames.toArray(new String[0]), null),
+                    neces.toArray(new Field[0]), unneces.toArray(new Field[0]));
+        }
+        return one;
+    }
+
 
 }

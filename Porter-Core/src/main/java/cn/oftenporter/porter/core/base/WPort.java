@@ -33,6 +33,8 @@ public class WPort implements TypeParserNameStore
 
     private Map<String, WPort> children;
 
+    private WPortInObj wPortInObj;
+
     public WPort()
     {
         starts = new ArrayList<>(1);
@@ -42,11 +44,6 @@ public class WPort implements TypeParserNameStore
 
     /**
      * 扫描函数。
-     *
-     * @param method
-     * @param checkPassableMap
-     * @param typeParserStore
-     * @return
      */
     private WPort childPort(Method method, Map<Class<?>, CheckPassable> checkPassableMap,
             TypeParserStore typeParserStore, boolean enableDefaultValue)
@@ -70,7 +67,7 @@ public class WPort implements TypeParserNameStore
                 _port.argCount = parameters.length;
                 _port.tiedType = portIn.tiedType();
                 _port.tiedName = PortUtil.tied(portIn, method,
-                        TiedType.type(getTiedType(), _port.getTiedType()) == TiedType.REST ? true : enableDefaultValue);
+                        TiedType.type(getTiedType(), _port.getTiedType()) == TiedType.REST || enableDefaultValue);
                 _port.inNames = new InNames(portIn.nece(), portIn.unnece(), portIn.inner());
                 _port.checks = portIn.checks();
                 _port.method = PortUtil.method(getMethod(), portIn.method());
@@ -78,6 +75,8 @@ public class WPort implements TypeParserNameStore
                 _port.port = method;
                 _port.parsersVarAndType = new HashMap<>();
                 PortUtil.addCheckPassable(checkPassableMap, portIn.checks());
+
+                //类型转换处理
                 if (method.isAnnotationPresent(Parser.class))
                 {
                     Parser parser = method.getAnnotation(Parser.class);
@@ -89,6 +88,7 @@ public class WPort implements TypeParserNameStore
                     PortUtil.addTypeParser(_port.parsersVarAndType, parse, typeParserStore);
                 }
 
+                _port.wPortInObj = PortUtil.dealPortInObj(method);
 
                 if (method.isAnnotationPresent(PortOut.class))
                 {
@@ -188,6 +188,16 @@ public class WPort implements TypeParserNameStore
         }
     }
 
+    /**
+     * 用于函数，转换成类。
+     *
+     * @return
+     */
+    public WPortInObj getWPortInObj()
+    {
+        return wPortInObj;
+    }
+
     public String getTiedName()
     {
         return tiedName;
@@ -227,9 +237,9 @@ public class WPort implements TypeParserNameStore
     /**
      * 对于rest，会优先获取非{@linkplain TiedType#REST}接口。
      *
-     * @param result
-     * @param method
-     * @return
+     * @param result 地址解析结果
+     * @param method 请求方法
+     * @return 函数接口。
      */
     public WPort getChild(UrlDecoder.Result result, PortMethod method)
     {

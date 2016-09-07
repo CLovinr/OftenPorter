@@ -5,6 +5,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
@@ -91,6 +93,22 @@ public class WPTool
             {
             }
         }
+    }
+
+    /**
+     * 通过反射构建一个实例，必须含有无参构造函数。
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    public static <T> T newObject(
+            Class<T> clazz) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+            InstantiationException
+    {
+        Constructor<T> c = clazz.getDeclaredConstructor();
+        c.setAccessible(true);
+        return c.newInstance();
     }
 
     /**

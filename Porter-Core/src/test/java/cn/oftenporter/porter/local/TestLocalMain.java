@@ -81,6 +81,19 @@ public class TestLocalMain
                 });
 
         localMain.getBridge()
+                .request(new LRequest("/Hello/parseObject").addParam("title", "转换出对象")
+                                .addParam("content", "this is content!").addParam("time", System.currentTimeMillis())
+                                .addParam("name","小傻").addParam("age",Integer.valueOf(8)),
+                        new LCallback()
+                        {
+                            @Override
+                            public void onResponse(LResponse lResponse)
+                            {
+                                logger.debug("{}", lResponse);
+                            }
+                        });
+
+        localMain.getBridge()
                 .request(new LRequest("/Hello/hihihi"), new LCallback()
                 {
                     @Override

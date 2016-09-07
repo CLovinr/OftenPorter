@@ -1,11 +1,9 @@
 package cn.oftenporter.porter.local.porter;
 
-import cn.oftenporter.porter.core.annotation.Parser;
-import cn.oftenporter.porter.core.annotation.PortDestroy;
-import cn.oftenporter.porter.core.annotation.PortIn;
-import cn.oftenporter.porter.core.annotation.PortStart;
+import cn.oftenporter.porter.core.annotation.*;
 import cn.oftenporter.porter.core.base.TiedType;
 import cn.oftenporter.porter.core.base.WObject;
+import cn.oftenporter.porter.core.base.WPort;
 import cn.oftenporter.porter.simple.parsers.IntParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +24,15 @@ public class HelloPorter
     {
         int age = (int) wObject.fn[1];
         return "Hello World!" + wObject.fn[0] + ",age=" + age;
+    }
+
+    @PortIn("parseObject")
+    @PortInObj(types = {Article.class,User.class})
+    public void parseObject(WObject wObject)
+    {
+        Article article = wObject.inObject(Article.class, 0);
+        User user = wObject.inObject(User.class,1);
+        LOGGER.debug("{}\n{}", article,user);
     }
 
     @PortIn(tiedType = TiedType.REST)

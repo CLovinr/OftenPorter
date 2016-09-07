@@ -40,6 +40,9 @@ public abstract class WObject
     public String restValue;
 
     public abstract WRequest getRequest();
+
     public abstract WResponse getResponse();
+
+    public abstract <T> T inObject(Class<T> clazz, int index);
 
 }

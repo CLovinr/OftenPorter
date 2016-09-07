@@ -60,6 +60,13 @@ public class DefaultFailedReason
         return new FailedReasonImpl(desc, json);
     }
 
+    public static ParamDealt.FailedReason parsePortInObjException(String desc)
+    {
+        JSONObject json = new JSONObject(2);
+        json.put("type", "ex_inObj");
+        return new FailedReasonImpl(desc, json);
+    }
+
     /**
      * 参数类型不合法。
      *

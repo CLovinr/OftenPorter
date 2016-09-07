@@ -4,6 +4,7 @@ import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.util.WPTool;
+import cn.oftenporter.porter.simple.DefaultFailedReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +52,7 @@ public class PortExecutor
             PortMethod method) throws InvocationTargetException, IllegalAccessException
     {
         UrlDecoder.Result result = urlDecoder.decode(request.getPath());
-        WObject wObject = new WObjectImpl(request, response);
+        WObjectImpl wObject = new WObjectImpl(request, response);
         if (result == null)
         {
             exNotFoundClassPort(request, response);
@@ -133,6 +134,16 @@ public class PortExecutor
             exParamDeal(wObject, failedReason);
             return;
         }
+        ///////////////////////////
+        //转换成类或接口对象
+        failedReason = paramDealOfPortInObj(funPort, wObject, paramSource, mTypeParserNameStoreImpl);
+        if (failedReason != null)
+        {
+            exParamDeal(wObject, failedReason);
+            return;
+        }
+        //////////////////////////////
+
 
         //函数通过检测
         rs = willPass(funPort, wObject, CheckPassable.Type.METHOD);
@@ -160,6 +171,66 @@ public class PortExecutor
                 break;
         }
 
+    }
+
+    /**
+     * 用于转换类。
+     *
+     * @param funPort
+     * @param paramSource
+     * @param mTypeParserNameStoreImpl @return
+     */
+    private ParamDealt.FailedReason paramDealOfPortInObj(WPort funPort, WObjectImpl wObjectImpl,
+            ParamSource paramSource, TypeParserNameStoreImpl mTypeParserNameStoreImpl)
+    {
+        ParamDealt.FailedReason reason = null;
+        WPortInObj inObj = funPort.getWPortInObj();
+        if (inObj == null)
+        {
+            return null;
+        }
+        WPortInObj.One[] ones = inObj.ones;
+        Object[] inObjects = new Object[ones.length];
+        wObjectImpl.inObjs = inObjects;
+        for (int i = 0; i < ones.length; i++)
+        {
+            WPortInObj.One one = ones[i];
+            if (one.isObject())
+            {//类
+                try
+                {
+                    Object[] neces = PortUtil.newArray(one.inNames.nece);
+                    Object[] unneces = PortUtil.newArray(one.inNames.unece);
+                    reason = paramDeal(one.inNames, neces, unneces, paramSource, mTypeParserNameStoreImpl);
+                    if (reason == null)
+                    {
+                        Object object = WPTool.newObject(one.clazz);
+
+                        for (int k = 0; k < neces.length; k++)
+                        {
+                            one.neceObjFields[k].set(object, neces[k]);
+                        }
+
+                        for (int k = 0; k < unneces.length; k++)
+                        {
+                            one.unneceObjFields[k].set(object, unneces[k]);
+                        }
+
+                        inObjects[i] = object;
+                    }
+                } catch (Exception e)
+                {
+                    LOGGER.error(e.getMessage(), e);
+                    reason = DefaultFailedReason.parsePortInObjException(e.getMessage());
+                    break;
+                }
+            } else
+            {//接口
+                throw new RuntimeException("stub!");
+            }
+        }
+
+        return reason;
     }
 
     private Object globalCheck(WObject wObject)

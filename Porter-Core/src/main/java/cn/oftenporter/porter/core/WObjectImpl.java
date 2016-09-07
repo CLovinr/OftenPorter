@@ -11,6 +11,7 @@ class WObjectImpl extends WObject
 {
     private WRequest request;
     private WResponse response;
+    Object[] inObjs;
 
     public WObjectImpl(WRequest request, WResponse response)
     {
@@ -28,5 +29,13 @@ class WObjectImpl extends WObject
     public WResponse getResponse()
     {
         return response;
+    }
+
+    @Override
+    public <T> T inObject(Class<T> clazz, int index)
+    {
+        Object obj = inObjs[index];
+        T t = (T) obj;
+        return t;
     }
 }
