@@ -1,6 +1,7 @@
 package cn.oftenporter.porter.simple;
 
 import cn.oftenporter.porter.core.base.UrlDecoder;
+import cn.oftenporter.porter.core.util.StrUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,15 +67,15 @@ public class DefaultUrlDecoder implements UrlDecoder
             {
                 sharpIndex = path.length();
             }
-            String[] strs = path.substring(index + 1, sharpIndex).split("&");
+            String[] strs = StrUtil.split(path.substring(index + 1, sharpIndex), "&");
             try
             {
-                for (java.lang.String string : strs)
+                for (String string : strs)
                 {
                     index = string.indexOf('=');
                     if (index != -1)
                     {
-                        params.put(string.substring(0, index),
+                        params.put(URLDecoder.decode(string.substring(0, index), encoding),
                                 URLDecoder.decode(string.substring(index + 1), encoding));
                     }
                 }

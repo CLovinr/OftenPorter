@@ -8,17 +8,26 @@ public interface CheckPassable
 {
     public enum Type
     {
+        /**
+         * 没有初始化任何参数。
+         */
         GLOBAL,
+        /**
+         * 类参数已经准备完成。
+         */
         CLASS,
+        /**
+         * 函数参数已经准备完成。
+         */
         METHOD
     }
 
     /**
      * 返回null表示通过。
      *
-     * @param wpObject
+     * @param wObject
      * @param type
      * @return
      */
-    Object willPass(WPObject wpObject, Type type);
+    Object willPass(WObject wObject, Type type);
 }

@@ -1,7 +1,7 @@
 package cn.oftenporter.porter.core.base;
 
 
-import cn.oftenporter.porter.core.annotation.Parse;
+import cn.oftenporter.porter.core.annotation.Parser;
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.exception.InitException;
 import cn.oftenporter.porter.core.util.WPTool;
@@ -95,7 +95,18 @@ public class PortUtil
         }
     }
 
-    public static void addTypeParser(Map<String, String> parsersVarAndType, Parse parse,
+
+    public static void addTypeParser(Map<String, String> parsersVarAndType, Parser parser,
+            TypeParserStore typeParserStore)
+    {
+        Parser.parse[] parses = parser.value();
+        for (int i = 0; i < parses.length; i++)
+        {
+            addTypeParser(parsersVarAndType, parses[i], typeParserStore);
+        }
+    }
+
+    public static void addTypeParser(Map<String, String> parsersVarAndType, Parser.parse parse,
             TypeParserStore typeParserStore)
     {
 

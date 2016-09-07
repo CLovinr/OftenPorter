@@ -16,9 +16,26 @@ public class LocalMain implements CommonMain
 {
     private PorterMain porterMain;
     private LBridge bridge;
+    private String pathPrefix;
+    private String urlEncoding;
 
-    public LocalMain(String name)
+    /**
+     * url参数的字符编码为utf-8
+     */
+    public LocalMain(String name, String pathPrefix)
     {
+        this(name, pathPrefix, "utf-8");
+    }
+
+    /**
+     * @param name        名称
+     * @param pathPrefix  路径前缀
+     * @param urlEncoding url参数的字符编码
+     */
+    public LocalMain(String name, String pathPrefix, String urlEncoding)
+    {
+        this.pathPrefix = pathPrefix;
+        this.urlEncoding = urlEncoding;
         porterMain = new PorterMain(name);
         bridge = new LBridge()
         {
@@ -43,7 +60,7 @@ public class LocalMain implements CommonMain
             @Override
             public UrlDecoder urlDecoder()
             {
-                return new DefaultUrlDecoder("", "utf-8");
+                return new DefaultUrlDecoder(pathPrefix, urlEncoding);
             }
 
             @Override

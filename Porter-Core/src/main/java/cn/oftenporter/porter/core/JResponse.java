@@ -2,6 +2,7 @@ package cn.oftenporter.porter.core;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
@@ -201,12 +202,23 @@ public class JResponse
     @Override
     public String toString()
     {
-        JSONObject jobj = new JSONObject(3);
-        jobj.put(CODE_FILED, code != null ? code.toCode()
+        JSONObject json = new JSONObject(3);
+        json.put(CODE_FILED, code != null ? code.toCode()
                 : ResultCode.Other.toCode());
-        jobj.put(DESCRIPTION_FILED, description);
-        jobj.put(RESULT_FILED, result);
-        return jobj.toString();
+        json.put(DESCRIPTION_FILED, description);
+        if (result != null)
+        {
+            if (result instanceof JSONObject || result instanceof JSONArray)
+            {
+                json.put(RESULT_FILED, result);
+            } else
+            {
+                json.put(RESULT_FILED, String.valueOf(result));
+            }
+        }
+
+
+        return json.toString();
     }
 
 }

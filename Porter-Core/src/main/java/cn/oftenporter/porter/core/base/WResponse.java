@@ -1,5 +1,7 @@
 package cn.oftenporter.porter.core.base;
 
+import cn.oftenporter.porter.core.annotation.NotNull;
+
 import java.io.Closeable;
 import java.io.IOException;
 
@@ -8,7 +10,7 @@ import java.io.IOException;
  */
 public interface WResponse extends Closeable
 {
-    void write(Object object);
+    void write(@NotNull Object object);
 
     void close() throws IOException;
 }

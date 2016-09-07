@@ -2,7 +2,7 @@ package cn.oftenporter.porter.core.init;
 
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.base.*;
-import cn.oftenporter.porter.simple.TypeParserStoreImpl;
+import cn.oftenporter.porter.simple.DefaultTypeParserStore;
 
 import java.util.*;
 
@@ -27,7 +27,8 @@ public class PorterConf
         stateListenerSet = new HashSet<>();
         globalChecks = new ArrayList<>();
         userInitParam = new InitParamSourceImpl();
-        typeParserStore = new TypeParserStoreImpl();
+        typeParserStore = new DefaultTypeParserStore();
+        this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
     private void checkInited()

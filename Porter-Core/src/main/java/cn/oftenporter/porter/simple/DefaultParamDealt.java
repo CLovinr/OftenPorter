@@ -32,7 +32,7 @@ public class DefaultParamDealt implements ParamDealt
                 }
             } else if (isNecessary)
             {
-                return ParamDealtFailedReason.lackNecessaryParams(names[i]);
+                return DefaultFailedReason.lackNecessaryParams("Lack necessary params!", names[i]);
             }
         }
         return null;
@@ -61,7 +61,7 @@ public class DefaultParamDealt implements ParamDealt
                 }
             } else
             {
-                return ParamDealtFailedReason.illegalParams(name);
+                return DefaultFailedReason.illegalParams("Illegal param type!",name);
             }
         }
         if ("".equals(v))

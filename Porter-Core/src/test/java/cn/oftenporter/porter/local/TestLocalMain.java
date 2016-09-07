@@ -3,9 +3,8 @@ package cn.oftenporter.porter.local;
 import cn.oftenporter.porter.core.ParamSourceHandleManager;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.StateListener;
-import cn.oftenporter.porter.core.base.WPObject;
+import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.init.InitParamSource;
-import cn.oftenporter.porter.core.util.LogUtil;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -16,60 +15,60 @@ import org.slf4j.LoggerFactory;
  */
 public class TestLocalMain
 {
+
     @Test
     public void main()
     {
         PropertyConfigurator.configure(getClass().getResourceAsStream("/log4j.properties"));
-        LocalMain localMain = new LocalMain("LocalMain");
+        LocalMain localMain = new LocalMain("LocalMain", "");
         localMain.getPorterConf().getSeekPackages().addPorters("cn.oftenporter.porter.local.porter");
         localMain.getPorterConf().setEnablePortInTiedNameDefault(false);
-
+        final Logger logger = LoggerFactory.getLogger(getClass());
         localMain.getPorterConf().addStateListener(new StateListener()
         {
             @Override
             public void beforeSeek(InitParamSource initParamSource, ParamSourceHandleManager paramSourceHandleManager)
             {
-                initParamSource.putInitParameter("debug",true);
-                LogUtil.printErrPosLn();
+                initParamSource.putInitParameter("debug", true);
+                logger.debug("");
             }
 
             @Override
             public void afterSeek(InitParamSource initParamSource, ParamSourceHandleManager paramSourceHandleManager)
             {
-                LogUtil.printErrPosLn();
+                logger.debug("");
             }
 
             @Override
             public void afterStart(InitParamSource initParamSource)
             {
-                LogUtil.printErrPosLn(initParamSource.getInitParameter("debug"));
+                logger.debug("{}", initParamSource.getInitParameter("debug"));
             }
 
             @Override
             public void beforeDestroy()
             {
-                LogUtil.printErrPosLn();
+                logger.debug("");
             }
 
             @Override
             public void afterDestroy()
             {
-                LogUtil.printErrPosLn();
+                logger.debug("");
             }
         });
 
         localMain.getPorterConf().addGlobalCheck(new CheckPassable()
         {
             @Override
-            public Object willPass(WPObject wpObject, Type type)
+            public Object willPass(WObject wObject, Type type)
             {
-                LogUtil.printErrPosLn();
+                logger.debug("");
                 return null;
             }
         });
 
         localMain.start();
-        long time = System.currentTimeMillis();
 
         localMain.getBridge()
                 .request(new LRequest("/Hello/say").addParam("name", "小明").addParam("age", "22"), new LCallback()
@@ -77,11 +76,20 @@ public class TestLocalMain
                     @Override
                     public void onResponse(LResponse lResponse)
                     {
-                        LogUtil.printPosLn(lResponse);
+                        logger.debug("{}", lResponse);
                     }
                 });
 
-        LogUtil.printPosLn("time=", (System.currentTimeMillis() - time), "ms");
+        localMain.getBridge()
+                .request(new LRequest("/Hello/hihihi"), new LCallback()
+                {
+                    @Override
+                    public void onResponse(LResponse lResponse)
+                    {
+                        logger.debug("{}", lResponse);
+                    }
+                });
+
         localMain.destroy();
     }
 }

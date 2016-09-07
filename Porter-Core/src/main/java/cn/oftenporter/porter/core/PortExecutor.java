@@ -51,7 +51,7 @@ public class PortExecutor
             PortMethod method) throws InvocationTargetException, IllegalAccessException
     {
         UrlDecoder.Result result = urlDecoder.decode(request.getPath());
-        WPObject wpObject = new WPObjectImpl(request, response);
+        WObject wObject = new WObjectImpl(request, response);
         if (result == null)
         {
             exNotFoundClassPort(request, response);
@@ -66,19 +66,19 @@ public class PortExecutor
         }
 
         //全局通过检测
-        Object rs = globalCheck(wpObject);
+        Object rs = globalCheck(wObject);
         if (rs != null)
         {
-            exCheckPassable(wpObject, rs);
+            exCheckPassable(wObject, rs);
             return;
         }
 
         //类参数初始化
         InNames inNames = classPort.getInNames();
-        wpObject.cn = PortUtil.newArray(inNames.nece);
-        wpObject.cu = PortUtil.newArray(inNames.unece);
-        wpObject.cinner = PortUtil.newArray(inNames.inner);
-        wpObject.cInNames = inNames;
+        wObject.cn = PortUtil.newArray(inNames.nece);
+        wObject.cu = PortUtil.newArray(inNames.unece);
+        wObject.cinner = PortUtil.newArray(inNames.inner);
+        wObject.cInNames = inNames;
 
         ParamSource paramSource = getParamSource(result, method, request);
 
@@ -86,20 +86,20 @@ public class PortExecutor
                 classPort);
 
         //类参数处理
-        ParamDealt.FailedReason failedReason = paramDeal(inNames, wpObject.cn, wpObject.cu, paramSource,
+        ParamDealt.FailedReason failedReason = paramDeal(inNames, wObject.cn, wObject.cu, paramSource,
                 mTypeParserNameStoreImpl);
         if (failedReason != null)
         {
-            exParamDeal(wpObject, failedReason);
+            exParamDeal(wObject, failedReason);
             return;
         }
 
 
         //类通过检测
-        rs = willPass(classPort, wpObject, CheckPassable.Type.CLASS);
+        rs = willPass(classPort, wObject, CheckPassable.Type.CLASS);
         if (rs != null)
         {
-            exCheckPassable(wpObject, rs);
+            exCheckPassable(wObject, rs);
             return;
         }
 
@@ -109,36 +109,36 @@ public class PortExecutor
         WPort funPort = classPort.getChild(result, method);
         if (funPort == null)
         {
-            exNotFoundFun(wpObject, result);
+            exNotFoundFun(wObject, result);
             return;
         }
         mTypeParserNameStoreImpl.setMethodStore(funPort);
         if (funPort.getTiedType() == TiedType.REST)
         {
-            wpObject.restValue = result.funTied();
+            wObject.restValue = result.funTied();
         }
 
         //函数参数初始化
         inNames = funPort.getInNames();
-        wpObject.fn = PortUtil.newArray(inNames.nece);
-        wpObject.fu = PortUtil.newArray(inNames.unece);
-        wpObject.finner = PortUtil.newArray(inNames.inner);
-        wpObject.fInNames = inNames;
+        wObject.fn = PortUtil.newArray(inNames.nece);
+        wObject.fu = PortUtil.newArray(inNames.unece);
+        wObject.finner = PortUtil.newArray(inNames.inner);
+        wObject.fInNames = inNames;
 
         //函数参数处理
 
-        failedReason = paramDeal(inNames, wpObject.fn, wpObject.fu, paramSource, mTypeParserNameStoreImpl);
+        failedReason = paramDeal(inNames, wObject.fn, wObject.fu, paramSource, mTypeParserNameStoreImpl);
         if (failedReason != null)
         {
-            exParamDeal(wpObject, failedReason);
+            exParamDeal(wObject, failedReason);
             return;
         }
 
         //函数通过检测
-        rs = willPass(funPort, wpObject, CheckPassable.Type.METHOD);
+        rs = willPass(funPort, wObject, CheckPassable.Type.METHOD);
         if (rs != null)
         {
-            exCheckPassable(wpObject, rs);
+            exCheckPassable(wObject, rs);
             return;
         }
 
@@ -149,24 +149,24 @@ public class PortExecutor
             rs = javaMethod.invoke(classPort.getPortObject());
         } else
         {
-            rs = javaMethod.invoke(classPort.getPortObject(), wpObject);
+            rs = javaMethod.invoke(classPort.getPortObject(), wObject);
         }
         switch (funPort.getOutType())
         {
             case NoResponse:
                 break;
             case Object:
-                responseObject(wpObject, rs);
+                responseObject(wObject, rs);
                 break;
         }
 
     }
 
-    private Object globalCheck(WPObject wpObject)
+    private Object globalCheck(WObject wObject)
     {
         for (int i = 0; i < globalChecks.length; i++)
         {
-            Object rs = globalChecks[i].willPass(wpObject, CheckPassable.Type.GLOBAL);
+            Object rs = globalChecks[i].willPass(wObject, CheckPassable.Type.GLOBAL);
             if (rs != null)
             {
                 return rs;
@@ -178,13 +178,13 @@ public class PortExecutor
     /**
      * 通过检测
      */
-    private Object willPass(WPort wport, WPObject wpObject, CheckPassable.Type type)
+    private Object willPass(WPort wport, WObject wObject, CheckPassable.Type type)
     {
         Class<? extends CheckPassable>[] cps = wport.getChecks();
         for (int i = 0; i < cps.length; i++)
         {
             CheckPassable cp = portContext.getCheckPassable(cps[i]);
-            Object rs = cp.willPass(wpObject, type);
+            Object rs = cp.willPass(wObject, type);
             if (rs != null)
             {
                 return rs;
@@ -235,9 +235,9 @@ public class PortExecutor
 ////////////////////////////////////////////////
     //////////////////////////////////////////
 
-    private void close(WPObject wpObject)
+    private void close(WObject wObject)
     {
-        WPTool.close(wpObject.getResponse());
+        WPTool.close(wObject.getResponse());
     }
 
     private void close(WResponse response)
@@ -256,48 +256,48 @@ public class PortExecutor
         close(response);
     }
 
-    private void responseObject(WPObject wpObject, Object object)
+    private void responseObject(WObject wObject, Object object)
     {
         if (object != null)
         {
-            wpObject.getResponse().write(object);
+            wObject.getResponse().write(object);
         }
-        close(wpObject);
+        close(wObject);
     }
 
-    private void exCheckPassable(WPObject wpObject, Object obj)
+    private void exCheckPassable(WObject wObject, Object obj)
     {
         if (responseWhenException)
         {
             JResponse jResponse = new JResponse(ResultCode.ACCESS_DENIED);
             jResponse.setDescription(String.valueOf(obj));
-            wpObject.getResponse().write(jResponse);
+            wObject.getResponse().write(jResponse);
         }
-        close(wpObject);
+        close(wObject);
     }
 
-    private void exParamDeal(WPObject wpObject, ParamDealt.FailedReason reason)
+    private void exParamDeal(WObject wObject, ParamDealt.FailedReason reason)
     {
         if (responseWhenException)
         {
             JResponse jResponse = new JResponse();
             jResponse.setCode(ResultCode.PARAM_DEAL_EXCEPTION);
-            jResponse.setDescription("Lack necessary params!");
-            jResponse.setResult(reason);
-            wpObject.getResponse().write(jResponse);
+            jResponse.setDescription(reason.desc());
+            jResponse.setResult(reason.toJSON());
+            wObject.getResponse().write(jResponse);
         }
-        close(wpObject);
+        close(wObject);
     }
 
-    private void exNotFoundFun(WPObject wpObject, UrlDecoder.Result result)
+    private void exNotFoundFun(WObject wObject, UrlDecoder.Result result)
     {
         if (responseWhenException)
         {
             JResponse jResponse = new JResponse(ResultCode.NOT_AVAILABLE);
             jResponse.setDescription("fun:" + result.toString());
-            wpObject.getResponse().write(jResponse);
+            wObject.getResponse().write(jResponse);
         }
-        close(wpObject);
+        close(wObject);
     }
 
     private void exNotFoundClassPort(WRequest request, WResponse response)

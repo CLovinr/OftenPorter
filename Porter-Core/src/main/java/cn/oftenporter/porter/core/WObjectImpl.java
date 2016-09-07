@@ -1,18 +1,18 @@
 package cn.oftenporter.porter.core;
 
-import cn.oftenporter.porter.core.base.WPObject;
+import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.base.WRequest;
 import cn.oftenporter.porter.core.base.WResponse;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/1.
  */
-class WPObjectImpl extends WPObject
+class WObjectImpl extends WObject
 {
     private WRequest request;
     private WResponse response;
 
-    public WPObjectImpl(WRequest request, WResponse response)
+    public WObjectImpl(WRequest request, WResponse response)
     {
         this.request = request;
         this.response = response;

@@ -1,5 +1,7 @@
 package cn.oftenporter.porter.core.base;
 
+import com.alibaba.fastjson.JSONObject;
+
 /**
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
@@ -10,6 +12,9 @@ public interface ParamDealt
      */
     public interface FailedReason
     {
+        JSONObject toJSON();
+
+        String desc();
     }
 
     /**

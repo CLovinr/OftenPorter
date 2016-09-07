@@ -1,5 +1,6 @@
 package cn.oftenporter.porter.local;
 
+import cn.oftenporter.porter.core.annotation.NotNull;
 import cn.oftenporter.porter.core.base.WResponse;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ class LocalResponse implements WResponse
     }
 
     @Override
-    public void write(Object object)
+    public void write(@NotNull Object object)
     {
         list.add(object);
     }

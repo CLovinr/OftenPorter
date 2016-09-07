@@ -58,7 +58,7 @@ public class WPort implements TypeParserNameStore
             {
 
                 Class<?>[] parameters = method.getParameterTypes();
-                if (parameters.length > 1 || parameters.length == 1 && !WPObject.class.equals(parameters[0]))
+                if (parameters.length > 1 || parameters.length == 1 && !WObject.class.equals(parameters[0]))
                 {
                     throw new IllegalArgumentException("the parameter list of " + method + " is illegal!");
                 }
@@ -78,9 +78,14 @@ public class WPort implements TypeParserNameStore
                 _port.port = method;
                 _port.parsersVarAndType = new HashMap<>();
                 PortUtil.addCheckPassable(checkPassableMap, portIn.checks());
-                if (method.isAnnotationPresent(Parse.class))
+                if (method.isAnnotationPresent(Parser.class))
                 {
-                    Parse parse = method.getAnnotation(Parse.class);
+                    Parser parser = method.getAnnotation(Parser.class);
+                    PortUtil.addTypeParser(_port.parsersVarAndType, parser, typeParserStore);
+                }
+                if (method.isAnnotationPresent(Parser.parse.class))
+                {
+                    Parser.parse parse = method.getAnnotation(Parser.parse.class);
                     PortUtil.addTypeParser(_port.parsersVarAndType, parse, typeParserStore);
                 }
 
@@ -127,9 +132,15 @@ public class WPort implements TypeParserNameStore
 
         this.parsersVarAndType = new HashMap<>();
         PortUtil.addCheckPassable(checkPassableMap, in.checks());
-        if (clazz.isAnnotationPresent(Parse.class))
+        if (clazz.isAnnotationPresent(Parser.class))
         {
-            Parse parse = clazz.getAnnotation(Parse.class);
+            Parser parser = clazz.getAnnotation(Parser.class);
+            PortUtil.addTypeParser(this.parsersVarAndType, parser, typeParserStore);
+        }
+
+        if (clazz.isAnnotationPresent(Parser.parse.class))
+        {
+            Parser.parse parse = clazz.getAnnotation(Parser.parse.class);
             PortUtil.addTypeParser(this.parsersVarAndType, parse, typeParserStore);
         }
 

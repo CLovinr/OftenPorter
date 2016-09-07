@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Created by https://github.com/CLovinr on 2016/9/4.
  */
-public class TypeParserStoreImpl implements TypeParserStore
+public class DefaultTypeParserStore implements TypeParserStore
 {
     private Map<String, TypeParser> map = new HashMap<>();
 
