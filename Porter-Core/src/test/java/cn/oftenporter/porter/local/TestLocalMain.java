@@ -81,7 +81,7 @@ public class TestLocalMain
                 });
 
         localMain.getBridge()
-                .request(new LRequest("/Hello/parseObject").addParam("title", "转换出对象")
+                .request(new LRequest("/Hello/parseObject").addParam("title", "转换成对象")
                                 .addParam("content", "this is content!").addParam("time", System.currentTimeMillis())
                                 .addParam("name","小傻").addParam("age",Integer.valueOf(8)),
                         new LCallback()
