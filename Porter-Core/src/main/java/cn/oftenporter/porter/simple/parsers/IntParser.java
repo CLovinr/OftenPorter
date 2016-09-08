@@ -18,8 +18,7 @@ public class IntParser implements TypeParser
         try
         {
             Object v;
-            if ((value.getClass().isPrimitive() && value.getClass()
-                    .equals(Integer.class)) || (value instanceof Integer))
+            if (value instanceof Integer)
             {
                 v = value;
             } else

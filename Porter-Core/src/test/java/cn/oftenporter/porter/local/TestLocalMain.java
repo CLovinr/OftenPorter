@@ -23,6 +23,7 @@ public class TestLocalMain
         LocalMain localMain = new LocalMain("LocalMain", "");
         localMain.getPorterConf().getSeekPackages().addPorters("cn.oftenporter.porter.local.porter");
         localMain.getPorterConf().setEnablePortInTiedNameDefault(false);
+        localMain.getPorterConf().addGlobalAutoSetObject("globalName","全局对象");
         final Logger logger = LoggerFactory.getLogger(getClass());
         localMain.getPorterConf().addStateListener(new StateListener()
         {
@@ -82,8 +83,21 @@ public class TestLocalMain
 
         localMain.getBridge()
                 .request(new LRequest("/Hello/parseObject").addParam("title", "转换成对象")
-                                .addParam("content", "this is content!").addParam("time", System.currentTimeMillis())
-                                .addParam("name","小傻").addParam("age",Integer.valueOf(8)),
+                                .addParam("comments", "['c1','c2']")
+                                .addParam("content", "this is content!")
+                                .addParam("time", String.valueOf(System.currentTimeMillis()))
+                                .addParam("name", "小傻").addParam("myAge", "18"),
+                        new LCallback()
+                        {
+                            @Override
+                            public void onResponse(LResponse lResponse)
+                            {
+                                logger.debug("{}", lResponse);
+                            }
+                        });
+
+        localMain.getBridge()
+                .request(new LRequest("/Hello/parseObject"),
                         new LCallback()
                         {
                             @Override

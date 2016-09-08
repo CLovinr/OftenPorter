@@ -14,7 +14,7 @@ public class DoubleParser implements TypeParser
         try
         {
             Object v;
-            if ((value.getClass().isPrimitive() && value.getClass().equals(Double.class)) || (value instanceof Double))
+            if (value instanceof Double)
             {
                 v = value;
             } else

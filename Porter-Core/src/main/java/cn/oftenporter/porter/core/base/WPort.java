@@ -51,16 +51,14 @@ public class WPort implements TypeParserNameStore
         WPort port = null;
         try
         {
+            method.setAccessible(true);
             if (method.isAnnotationPresent(PortIn.class))
             {
-
                 Class<?>[] parameters = method.getParameterTypes();
                 if (parameters.length > 1 || parameters.length == 1 && !WObject.class.equals(parameters[0]))
                 {
                     throw new IllegalArgumentException("the parameter list of " + method + " is illegal!");
                 }
-
-                method.setAccessible(true);
 
                 PortIn portIn = method.getAnnotation(PortIn.class);
                 WPort _port = new WPort();
@@ -88,7 +86,7 @@ public class WPort implements TypeParserNameStore
                     PortUtil.addTypeParser(_port.parsersVarAndType, parse, typeParserStore);
                 }
 
-                _port.wPortInObj = PortUtil.dealPortInObj(method);
+                _port.wPortInObj = PortUtil.dealPortInObj(method, _port.parsersVarAndType, typeParserStore);
 
                 if (method.isAnnotationPresent(PortOut.class))
                 {

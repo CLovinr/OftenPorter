@@ -1,6 +1,7 @@
 package cn.oftenporter.porter.core;
 
 
+import cn.oftenporter.porter.core.annotation.AutoSet;
 import cn.oftenporter.porter.core.annotation.NotNull;
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.base.*;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -66,29 +68,77 @@ public class PortContext
         }
         this.typeParserStore = typeParserStore;
         this.enableDefaultValue = porterConf.isEnablePortInTiedNameDefault();
-        seek(porterConf.getSeekPackages());
+        seek(porterConf.getSeekPackages(), porterConf.getGlobalAutoSetMap());
         return this;
     }
 
-    private PortContext seek(@NotNull SeekPackages seekPackages)
+    private PortContext seek(@NotNull SeekPackages seekPackages, Map<String, Object> globalAutoSetMap)
     {
-        return seek(seekPackages.getPackages());
+        return seek(seekPackages.getPackages(), globalAutoSetMap);
     }
 
-    private PortContext seek(@NotNull JSONArray packages)
+    private PortContext seek(@NotNull JSONArray packages, Map<String, Object> globalAutoSetMap)
     {
         if (classLoader != null)
         {
             Thread.currentThread().setContextClassLoader(classLoader);
         }
+        Map<Class<?>, Object> oneInstanceMap = new HashMap<>();
         for (int i = 0; i < packages.size(); i++)
         {
-            seekPackage(packages.getString(i));
+            seekPackage(packages.getString(i), globalAutoSetMap, oneInstanceMap);
         }
         return this;
     }
 
-    private void seekPackage(String packageStr)
+    private void autoSetObject(Object object, Map<String, Object> globalAutoSetMap,
+            Map<Class<?>, Object> oneInstanceMap) throws Exception
+    {
+        Field[] fields = object.getClass().getDeclaredFields();
+        for (int i = 0; i < fields.length; i++)
+        {
+            Field f = fields[i];
+            if (!f.isAnnotationPresent(AutoSet.class))
+            {
+                continue;
+            }
+            AutoSet autoSet = f.getAnnotation(AutoSet.class);
+            f.setAccessible(true);
+            String keyName = autoSet.value();
+            Object value;
+            if ("".equals(keyName))
+            {
+                Class<?> type = f.getType();
+
+                if (autoSet.oneInstance())
+                {
+                    if (oneInstanceMap.containsKey(type))
+                    {
+                        value = oneInstanceMap.get(type);
+                    } else
+                    {
+                        value = PortUtil.newObject(f.getType());
+                        oneInstanceMap.put(type, value);
+                    }
+                } else
+                {
+                    value = PortUtil.newObject(f.getType());
+                }
+            } else
+            {
+                value = globalAutoSetMap.get(keyName);
+                if (value == null)
+                {
+                    throw new RuntimeException("globalAutoSet Object for '" + keyName + " is null!");
+                }
+
+            }
+            f.set(object, value);
+        }
+    }
+
+    private void seekPackage(String packageStr, Map<String, Object> globalAutoSetMap,
+            Map<Class<?>, Object> oneInstanceMap)
     {
         LOGGER.debug("扫描包：{}", packageStr);
         List<String> classeses = PackageUtil.getClassName(packageStr);
@@ -104,6 +154,7 @@ public class PortContext
                     Constructor<?> constructor = clazz.getDeclaredConstructor();
                     constructor.setAccessible(true);
                     Object porter = constructor.newInstance();
+                    autoSetObject(porter, globalAutoSetMap, oneInstanceMap);
                     addPorter(porter);
                 }
             } catch (Exception e)

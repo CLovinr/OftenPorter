@@ -16,8 +16,7 @@ public class BooleanParser implements TypeParser
         try
         {
             Object v;
-            if ((value.getClass().isPrimitive() && value.getClass()
-                    .equals(Boolean.class)) || (value instanceof Boolean))
+            if (value instanceof Boolean)
             {
                 v = value;
             } else

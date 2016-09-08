@@ -3,7 +3,6 @@ package cn.oftenporter.porter.local.porter;
 import cn.oftenporter.porter.core.annotation.*;
 import cn.oftenporter.porter.core.base.TiedType;
 import cn.oftenporter.porter.core.base.WObject;
-import cn.oftenporter.porter.core.base.WPort;
 import cn.oftenporter.porter.simple.parsers.IntParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +18,18 @@ public class HelloPorter
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloPorter.class);
 
+    @AutoSet
+    private AutoSetObj autoSetObj;
+
+    @AutoSet
+    private static AutoSetObj autoSetObj2;
+
+    @AutoSet(oneInstance = false)
+    private AutoSetObj autoSetObj3;
+
+    @AutoSet("globalName")
+    private String globalSet;
+
     @PortIn(value = "say", nece = {"name", "age"})
     public Object say(WObject wObject)
     {
@@ -27,12 +38,13 @@ public class HelloPorter
     }
 
     @PortIn("parseObject")
-    @PortInObj(types = {Article.class,User.class})
+    @Parser.parse(names = "myAge",parsers = IntParser.class)
+    @PortInObj(types = {Article.class, User.class})
     public void parseObject(WObject wObject)
     {
         Article article = wObject.inObject(Article.class, 0);
-        User user = wObject.inObject(User.class,1);
-        LOGGER.debug("{}\n{}", article,user);
+        User user = wObject.inObject(User.class, 1);
+        LOGGER.debug("{}\n{}", article, user);
     }
 
     @PortIn(tiedType = TiedType.REST)
@@ -44,7 +56,7 @@ public class HelloPorter
     @PortStart
     public void onStart()
     {
-        LOGGER.debug("");
+        LOGGER.debug("{},2:{},3:{},globalName={}", autoSetObj, autoSetObj2, autoSetObj3, globalSet);
     }
 
     @PortDestroy

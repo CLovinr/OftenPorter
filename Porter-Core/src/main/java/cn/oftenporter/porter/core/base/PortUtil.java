@@ -6,6 +6,7 @@ import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.annotation.PortInObj;
 import cn.oftenporter.porter.core.exception.InitException;
 import cn.oftenporter.porter.core.util.WPTool;
+import cn.oftenporter.porter.simple.parsers.ParserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -214,7 +215,7 @@ public class PortUtil
         }
     }
 
-    private static <T> T newObject(Class<T> clazz) throws Exception
+    public static <T> T newObject(Class<T> clazz) throws Exception
     {
         Constructor<T> constructor = clazz.getConstructor();
         constructor.setAccessible(true);
@@ -236,7 +237,8 @@ public class PortUtil
         }
     }
 
-    static WPortInObj dealPortInObj(Method method)
+    static WPortInObj dealPortInObj(Method method, Map<String, String> parsersVarAndType,
+            TypeParserStore typeParserStore) throws Exception
     {
         WPortInObj wPortInObj = null;
 
@@ -248,7 +250,7 @@ public class PortUtil
             WPortInObj.One[] ones = new WPortInObj.One[types.length];
             for (int i = 0; i < types.length; i++)
             {
-                ones[i] = buildOne(defaultNecessary, types[i]);
+                ones[i] = buildOne(defaultNecessary, types[i], parsersVarAndType, typeParserStore);
             }
             wPortInObj = new WPortInObj(ones);
         }
@@ -256,7 +258,9 @@ public class PortUtil
         return wPortInObj;
     }
 
-    private static WPortInObj.One buildOne(boolean defaultNecessary, Class<?> clazz)
+    private static WPortInObj.One buildOne(boolean defaultNecessary, Class<?> clazz,
+            Map<String, String> parsersVarAndType,
+            TypeParserStore typeParserStore) throws Exception
     {
         WPortInObj.One one;
         if (Modifier.isAbstract(clazz.getModifiers()))
@@ -275,16 +279,31 @@ public class PortUtil
             for (int i = 0; i < fields.length; i++)
             {
                 Field field = fields[i];
+                Boolean isAuto = null;
+                String name = null;
+                field.setAccessible(true);
                 if (field.isAnnotationPresent(PortInObj.InNece.class))
                 {
-                    field.setAccessible(true);
                     neces.add(field);
-                    neceNames.add(field.getName());
+                    name = field.getName();
+                    neceNames.add(name);
+                    isAuto = field.getAnnotation(PortInObj.InNece.class).autoParse();
                 } else if (field.isAnnotationPresent(PortInObj.InUnNece.class))
                 {
-                    field.setAccessible(true);
                     unneces.add(field);
-                    unneceNames.add(field.getName());
+                    name = field.getName();
+                    unneceNames.add(name);
+                    isAuto = field.getAnnotation(PortInObj.InUnNece.class).autoParse();
+                }
+                if (isAuto != null && isAuto)
+                {
+                    Class<? extends TypeParser> typeParser = ParserUtil.getTypeParser(field.getType());
+                    String typeName = typeParser.getName();
+                    if (!typeParserStore.contains(typeName))
+                    {
+                        typeParserStore.put(typeName, newObject(typeParser));
+                    }
+                    parsersVarAndType.put(name, typeName);
                 }
             }
             one = new WPortInObj.One(clazz,

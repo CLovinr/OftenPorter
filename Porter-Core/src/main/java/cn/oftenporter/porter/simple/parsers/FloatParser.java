@@ -17,7 +17,7 @@ public class FloatParser implements TypeParser
         try
         {
             Object v;
-            if ((value.getClass().isPrimitive() && value.getClass().equals(Float.class)) || (value instanceof Float))
+            if (value instanceof Float)
             {
                 v = value;
             } else

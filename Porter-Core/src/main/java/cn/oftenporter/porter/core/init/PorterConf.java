@@ -15,6 +15,7 @@ public class PorterConf
     private InitParamSource userInitParam;
     private Set<StateListener> stateListenerSet;
     private List<CheckPassable> globalChecks;
+    private Map<String, Object> globalAutoSetMap;
     private ClassLoader classLoader;
     private TypeParserStore typeParserStore;
     private boolean responseWhenException = true;
@@ -28,6 +29,7 @@ public class PorterConf
         globalChecks = new ArrayList<>();
         userInitParam = new InitParamSourceImpl();
         typeParserStore = new DefaultTypeParserStore();
+        globalAutoSetMap = new HashMap<>();
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
@@ -59,6 +61,17 @@ public class PorterConf
     {
         checkInited();
         return enablePortInTiedNameDefault;
+    }
+
+    /**
+     * 用于对象自动设置。另见{@linkplain cn.oftenporter.porter.core.annotation.AutoSet}
+     *
+     * @param name
+     * @param object
+     */
+    public void addGlobalAutoSetObject(String name, Object object)
+    {
+        globalAutoSetMap.put(name, object);
     }
 
     public void addGlobalTypeParser(String typeName, TypeParser typeParser)
@@ -119,6 +132,11 @@ public class PorterConf
         return globalChecks;
     }
 
+    public Map<String, Object> getGlobalAutoSetMap()
+    {
+        return globalAutoSetMap;
+    }
+
     public Set<StateListener> getStateListenerSet()
     {
         return stateListenerSet;
@@ -138,5 +156,6 @@ public class PorterConf
         classLoader = null;
         globalChecks = null;
         typeParserStore = null;
+        globalAutoSetMap = null;
     }
 }

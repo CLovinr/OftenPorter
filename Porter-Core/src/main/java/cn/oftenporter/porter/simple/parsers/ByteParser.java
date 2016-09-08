@@ -16,7 +16,7 @@ public class ByteParser implements TypeParser
         try
         {
             Object v;
-            if ((value.getClass().isPrimitive() && value.getClass().equals(Byte.class)) || (value instanceof Byte))
+            if (value instanceof Byte)
             {
                 v = value;
             } else

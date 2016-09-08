@@ -15,7 +15,7 @@ public class ShortParser implements TypeParser
         try
         {
             Object v;
-            if ((value.getClass().isPrimitive() && value.getClass().equals(Short.class)) || (value instanceof Short))
+            if (value instanceof Short)
             {
                 v = value;
             } else
