@@ -1,0 +1,50 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>cn.oftenporter</groupId>
+	<artifactId>Porter-Demo</artifactId>
+	<packaging>war</packaging>
+	<version>1.0.0</version>
+	<name>TestAndDemo Maven Webapp</name>
+	<url>http://maven.apache.org</url>
+
+
+	<properties>
+		<often-porter-version>1.0.0</often-porter-version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>cn.oftenporter</groupId>
+			<artifactId>Porter-Servlet</artifactId>
+			<version>${often-porter-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>cn.oftenporter</groupId>
+			<artifactId>Porter-DB</artifactId>
+			<version>${often-porter-version}</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.192</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.21</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<finalName>TestAndDemo</finalName>
+	</build>
+</project>

@@ -1,6 +1,7 @@
 package cn.oftenporter.servlet;
 
 
+import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.WRequest;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,10 +13,12 @@ public class WServletRequest implements WRequest
 {
     private HttpServletRequest request;
     private String path;
+    private PortMethod method;
 
-    WServletRequest(HttpServletRequest request)
+    WServletRequest(HttpServletRequest request, PortMethod method)
     {
         this.request = request;
+        this.method = method;
         this.path = request.getRequestURI().substring(request.getContextPath().length());
     }
 
@@ -36,6 +39,12 @@ public class WServletRequest implements WRequest
     public String getPath()
     {
         return path;
+    }
+
+    @Override
+    public PortMethod getMethod()
+    {
+        return method;
     }
 
 

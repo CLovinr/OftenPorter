@@ -1,13 +1,11 @@
 package cn.oftenporter.servlet;
 
-import cn.oftenporter.porter.core.base.ParamDealt;
-import cn.oftenporter.porter.core.base.PortMethod;
-import cn.oftenporter.porter.core.base.UrlDecoder;
+import cn.oftenporter.porter.core.PortExecutor;
+import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.CommonMain;
-import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.init.PorterMain;
-import cn.oftenporter.porter.simple.DefaultParamDealt;
+import cn.oftenporter.porter.simple.DefaultPorterBridge;
 import cn.oftenporter.porter.simple.DefaultUrlDecoder;
 
 import javax.servlet.ServletException;
@@ -19,37 +17,23 @@ import java.io.IOException;
 
 /**
  * 用于servlet。
- * <p>
- * <strong>
- * 注意：必须设置Servlet的名称。</strong>对于注解方式，加上name属性@WebServlet(name="不能为空，否则tomcat等会启动失败。")
- * <p>
  * </p>
  * <pre>
  *     初始参数有：
- *     pathPrefix:路径前缀
- *     urlEncoding:地址参数的字符编码
- *     contentEncoding:内容的字符编码
+ *     pathPrefix:路径前缀,默认为""
+ *     urlEncoding:地址参数的字符编码,默认为utf-8
+ *     responseWhenException:默认为true。
  * </pre>
  */
 public class WMainServlet extends HttpServlet implements CommonMain
 {
     private static final long serialVersionUID = 1L;
-    private String pathPrefix, urlEncoding, contentEncoding;
     private PorterMain porterMain;
-
-    public WMainServlet(String pathPrefix, String urlEncoding, String contentEncoding)
-    {
-        this.pathPrefix = pathPrefix;
-        this.urlEncoding = urlEncoding;
-        this.contentEncoding = contentEncoding;
-        porterMain = new PorterMain(getClass().getSimpleName());
-    }
 
     public WMainServlet()
     {
-        this("", "utf-8", "utf-8");
+        porterMain = new PorterMain();
     }
-
 
     @Override
     protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
@@ -103,10 +87,17 @@ public class WMainServlet extends HttpServlet implements CommonMain
     private void doRequest(HttpServletRequest request, HttpServletResponse response,
             PortMethod method) throws IOException
     {
-        request.setCharacterEncoding(contentEncoding);
-        response.setCharacterEncoding(contentEncoding);
-        porterMain.doRequest(new WServletRequest(request), new WServletResponse(response),
-                method);
+
+        WRequest wreq = new WServletRequest(request, method);
+        WResponse wresp = new WServletResponse(response);
+
+        PortExecutor.Request req = porterMain.forRequest(wreq, wresp);
+        if (req != null)
+        {
+            request.setCharacterEncoding(req.context.getContentEncoding());
+            response.setCharacterEncoding(req.context.getContentEncoding());
+            porterMain.doRequest(req, wreq, wresp);
+        }
     }
 
 
@@ -114,24 +105,22 @@ public class WMainServlet extends HttpServlet implements CommonMain
     public void init() throws ServletException
     {
         super.init();
-        porterMain.setName(getServletName());
+
         String pathPrefix = getInitParameter("pathPrefix");
-        if (pathPrefix != null)
+        if (pathPrefix == null)
         {
-            this.pathPrefix = pathPrefix;
+            pathPrefix = "";
         }
 
         String urlEncoding = getInitParameter("urlEncoding");
-        if (urlEncoding != null)
+        if (urlEncoding == null)
         {
-            this.urlEncoding = urlEncoding;
+            urlEncoding = "utf-8";
         }
-        String contentEncoding = getInitParameter("contentEncoding");
-        if (contentEncoding != null)
-        {
-            this.contentEncoding = contentEncoding;
-        }
-        start();
+
+        boolean responseWhenException = !"false".equals(getInitParameter("responseWhenException"));
+        porterMain.init(new DefaultUrlDecoder(pathPrefix, urlEncoding), responseWhenException);
+
     }
 
     /**
@@ -172,40 +161,57 @@ public class WMainServlet extends HttpServlet implements CommonMain
     }
 
     @Override
-    public String getName()
+    public void addGlobalAutoSet(String name, Object object)
     {
-        return porterMain.getName();
+        porterMain.addGlobalAutoSet(name, object);
     }
 
     @Override
-    public PorterConf getPorterConf()
+    public void addGlobalTypeParser(ITypeParser typeParser)
     {
-        return porterMain.getPorterConf();
+        porterMain.addGlobalTypeParser(typeParser);
     }
 
     @Override
-    public void start()
+    public void addGlobalCheck(CheckPassable checkPassable) throws RuntimeException
     {
-        porterMain.start(new PorterBridge()
-        {
-            @Override
-            public UrlDecoder urlDecoder()
-            {
-                return new DefaultUrlDecoder(pathPrefix, urlEncoding);
-            }
+        porterMain.addGlobalCheck(checkPassable);
+    }
 
-            @Override
-            public ParamDealt paramDealt()
-            {
-                return new DefaultParamDealt();
-            }
-        });
+    @Override
+    public PorterConf newPorterConf()
+    {
+        return porterMain.newPorterConf();
+    }
+
+    @Override
+    public void startOne(PorterConf porterConf)
+    {
+        porterMain.startOne(DefaultPorterBridge.defaultBridge(porterConf));
+    }
+
+    @Override
+    public void destroyOne(String contextName)
+    {
+        porterMain.destroyOne(contextName);
+    }
+
+    @Override
+    public void enableOne(String contextName, boolean enable)
+    {
+        porterMain.enableContext(contextName, enable);
+    }
+
+    @Override
+    public void destroyAll()
+    {
+        porterMain.destroyAll();
     }
 
     @Override
     public void destroy()
     {
-        porterMain.destroy();
+        destroyAll();
         super.destroy();
     }
 
