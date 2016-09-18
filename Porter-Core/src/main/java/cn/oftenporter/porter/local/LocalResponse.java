@@ -2,29 +2,31 @@ package cn.oftenporter.porter.local;
 
 import cn.oftenporter.porter.core.annotation.NotNull;
 import cn.oftenporter.porter.core.base.WResponse;
+import cn.oftenporter.porter.core.pbridge.PCallback;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/2.
  */
-class LocalResponse implements WResponse
+public class LocalResponse implements WResponse
 {
-    private List<Object> list;
-    private LCallback callback;
+    private Object object;
+    private PCallback callback;
 
-    public LocalResponse(LCallback callback)
+    public LocalResponse(PCallback callback)
     {
         this.callback = callback;
-        list = new ArrayList<>(1);
     }
 
     @Override
-    public void write(@NotNull Object object)
+    public void write(@NotNull Object object) throws IOException
     {
-        list.add(object);
+        if (this.object != null)
+        {
+            throw new IOException("already write before!");
+        }
+        this.object = object;
     }
 
     @Override
@@ -32,7 +34,7 @@ class LocalResponse implements WResponse
     {
         if (callback != null)
         {
-            callback.onResponse(new LResponse(list));
+            callback.onResponse(new LResponse(object));
         }
     }
 }

@@ -7,6 +7,7 @@ import cn.oftenporter.porter.core.base.StateListener;
 import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.init.InitParamSource;
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.*;
 import cn.oftenporter.porter.local.porter.Article;
 import cn.oftenporter.porter.local.porter.Demo;
 import cn.oftenporter.porter.local.porter.IDemo;
@@ -34,7 +35,7 @@ public class TestLocalMain
     public void main()
     {
         PropertyConfigurator.configure(getClass().getResourceAsStream("/log4j.properties"));
-        LocalMain localMain = new LocalMain(true, "", "utf-8");
+        LocalMain localMain = new LocalMain(true, new PName("P1"), "utf-8");
         PorterConf porterConf = localMain.newPorterConf();
         porterConf.setContextName("Local-1");
         porterConf.getSeekPackages().addPorters("cn.oftenporter.porter.local.porter");
@@ -90,20 +91,9 @@ public class TestLocalMain
         });
 
         localMain.startOne(porterConf);
-        long time = System.currentTimeMillis();
         int n = 100000;
-        int threads = 30;
-        //多线程下测试
-        exe(threads, n, localMain.getBridge());
-        long total = System.currentTimeMillis()-time;
-        logger.debug("**************************************");
-        logger.debug("threads={},n={}:total={}ms,average={}ms", threads,n,total,total/n);
-        logger.debug("**************************************");
-        localMain.destroyAll();
-    }
+        int threads = 20;
 
-    private void exe(int threads, int n, final LBridge bridge)
-    {
         ExecutorService executorService = Executors.newFixedThreadPool(threads, new ThreadFactory()
         {
             @Override
@@ -115,6 +105,20 @@ public class TestLocalMain
             }
         });
 
+        //多线程下测试
+        long time = System.currentTimeMillis();
+        exe(executorService, n, localMain.getBridge());
+        long total = System.currentTimeMillis()-time;
+
+        logger.debug("**************************************");
+        logger.debug("threads={},n={}:total={}ms,average={}ms", threads,n,total,1.0d*total/n);
+        logger.debug("**************************************");
+        localMain.destroyAll();
+    }
+
+    private void exe(ExecutorService executorService, int n, final PBridge bridge)
+    {
+
         for (int i = 0; i < n; i++)
         {
             executorService.execute(new Runnable()
@@ -122,78 +126,78 @@ public class TestLocalMain
                 @Override
                 public void run()
                 {
-                    bridge.request(new LRequest("/Local-1/Hello/say").addParam("name", "小明").addParam("age", "22")
+                    bridge.request(new PRequest("/Local-1/Hello/say").addParam("name", "小明").addParam("age", "22")
                                     .addParam("myAge", 22),
-                            new LCallback()
+                            new PCallback()
                             {
                                 @Override
-                                public void onResponse(LResponse lResponse)
+                                public void onResponse(PResponse lResponse)
                                 {
-                                    assertEquals("小明+22", lResponse.first());
+                                    assertEquals("小明+22", lResponse.getResponse());
                                 }
                             });
 
-                    bridge.request(new LRequest("/Local-1/Hello/parseObject").addParam("title", "转换成对象")
+                    bridge.request(new PRequest("/Local-1/Hello/parseObject").addParam("title", "转换成对象")
                                     .addParam("comments", "['c1','c2']")
                                     .addParam("content", "this is content!")
                                     .addParam("time", String.valueOf(System.currentTimeMillis()))
                                     .addParam("name", "小傻").addParam("myAge", "18"),
-                            new LCallback()
+                            new PCallback()
                             {
                                 @Override
-                                public void onResponse(LResponse lResponse)
+                                public void onResponse(PResponse lResponse)
                                 {
                                     assertTrue(
-                                            lResponse.first() instanceof User || lResponse.first() instanceof Article);
+                                            lResponse.getResponse() instanceof User || lResponse.getResponse() instanceof Article);
                                 }
                             });
 
-                    bridge.request(new LRequest("/Local-1/Hello/").addParam("sex", "男").addParam("name", "name2")
-                            .addParam("myAge", 10), new LCallback()
+                    bridge.request(new PRequest("/Local-1/Hello/").addParam("sex", "男").addParam("name", "name2")
+                            .addParam("myAge", 10), new PCallback()
                     {
                         @Override
-                        public void onResponse(LResponse lResponse)
+                        public void onResponse(PResponse lResponse)
                         {
-                            assertEquals("=男", lResponse.first());
+                            assertEquals("=男", lResponse.getResponse());
                         }
                     });
 
 
-                    bridge.request(new LRequest("/Local-1/Hello").setMethod(PortMethod.POST).addParam("name", "name3")
-                            .addParam("myAge", 10).addParam("sex", "0"), new LCallback()
+                    bridge.request(new PRequest("/Local-1/Hello").setMethod(PortMethod.POST).addParam("name", "name3")
+                            .addParam("myAge", 10).addParam("sex", "0"), new PCallback()
                     {
                         @Override
-                        public void onResponse(LResponse lResponse)
+                        public void onResponse(PResponse lResponse)
                         {
-                            assertEquals(":0", lResponse.first());
+                            assertEquals(":0", lResponse.getResponse());
                         }
                     });
 
-                    bridge.request(new LRequest("/Local-1/Hello/hihihi").setMethod(PortMethod.POST)
+                    bridge.request(new PRequest("/Local-1/Hello/hihihi").setMethod(PortMethod.POST)
                             .addParam("name", "name4")
-                            .addParam("myAge", 10).addParam("sex", "0"), new LCallback()
+                            .addParam("myAge", 10).addParam("sex", "0"), new PCallback()
                     {
                         @Override
-                        public void onResponse(LResponse lResponse)
+                        public void onResponse(PResponse lResponse)
                         {
-                            assertEquals("hihihi:0", lResponse.first());
+                            assertEquals("hihihi:0", lResponse.getResponse());
                         }
                     });
 
-                    bridge.request(new LRequest("/Local-1/My2/hello"), new LCallback()
+                    bridge.request(new PRequest("/Local-1/My2/hello"), new PCallback()
                     {
                         @Override
-                        public void onResponse(LResponse lResponse)
+                        public void onResponse(PResponse lResponse)
                         {
-                            assertEquals("My2Porter", lResponse.first());
+                            assertEquals("My2Porter", lResponse.getResponse());
                         }
                     });
-                    bridge.request(new LRequest("/Local-1/My/hello").addParam("name", "Demo001"), new LCallback()
+                    bridge.request(new PRequest("/Local-1/My/hello").addParam("name", "Demo001"), new PCallback()
                     {
                         @Override
-                        public void onResponse(LResponse lResponse)
+                        public void onResponse(PResponse lResponse)
                         {
-                            assertTrue(lResponse.first() instanceof IDemo);
+                            assertTrue(lResponse.getResponse() instanceof IDemo);
                         }
                     });
 

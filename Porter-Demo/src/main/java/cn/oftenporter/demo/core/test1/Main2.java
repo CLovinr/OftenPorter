@@ -6,9 +6,10 @@ import org.slf4j.LoggerFactory;
 import cn.oftenporter.demo.core.test1.check.GlobalCheckPassable;
 import cn.oftenporter.demo.core.test1.porter.Hello5Porter;
 import cn.oftenporter.porter.core.init.PorterConf;
-import cn.oftenporter.porter.local.LCallback;
-import cn.oftenporter.porter.local.LRequest;
-import cn.oftenporter.porter.local.LResponse;
+import cn.oftenporter.porter.core.pbridge.PCallback;
+import cn.oftenporter.porter.core.pbridge.PName;
+import cn.oftenporter.porter.core.pbridge.PRequest;
+import cn.oftenporter.porter.core.pbridge.PResponse;
 import cn.oftenporter.porter.local.LocalMain;
 
 public class Main2
@@ -22,7 +23,7 @@ public class Main2
 
 	final Logger logger = LoggerFactory.getLogger(Main1.class);
 
-	LocalMain localMain = new LocalMain(true,"","utf-8");
+	LocalMain localMain = new LocalMain(true,new PName("P1"),"utf-8");
 
 	// 进行配置
 	PorterConf conf = localMain.newPorterConf();
@@ -36,14 +37,14 @@ public class Main2
 	localMain.startOne(conf);
 	logger.debug("****************************************************");
 
-	localMain.getBridge().request(new LRequest("/Test1-2Main/Hello5/say"),
-		new LCallback()
+	localMain.getBridge().request(new PRequest("/Test1-2Main/Hello5/say"),
+		new PCallback()
 		{
 
 		    @Override
-		    public void onResponse(LResponse lResponse)
+		    public void onResponse(PResponse lResponse)
 		    {
-			logger.debug(String.valueOf(lResponse.first()));
+			logger.debug(String.valueOf(lResponse.getResponse()));
 		    }
 		});
 	logger.debug("****************************************************");

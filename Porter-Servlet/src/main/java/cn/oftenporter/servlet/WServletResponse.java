@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class WServletResponse implements WResponse
 {
@@ -37,16 +38,13 @@ public class WServletResponse implements WResponse
     }
 
     @Override
-    public void write(@NotNull Object object)
+    public void write(@NotNull Object object) throws IOException
     {
-        try
-        {
-            setContentType(object);
-            response.getWriter().print(object);
-        } catch (IOException e)
-        {
-            LOGGER.error(e.getMessage(), e);
-        }
+
+        setContentType(object);
+        PrintWriter printWriter = response.getWriter();
+        printWriter.print(object);
+        printWriter.flush();
     }
 
     @Override

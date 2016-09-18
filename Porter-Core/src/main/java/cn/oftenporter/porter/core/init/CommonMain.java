@@ -3,6 +3,7 @@ package cn.oftenporter.porter.core.init;
 import cn.oftenporter.porter.core.annotation.AutoSet;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.ITypeParser;
+import cn.oftenporter.porter.core.pbridge.PInit;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/3.
@@ -42,6 +43,8 @@ public interface CommonMain
      * @param porterConf
      */
     void startOne(PorterConf porterConf);
+
+    PInit getPInit();
 
     /**
      * 销毁指定的context。

@@ -34,12 +34,11 @@ class Hello1Porter
     public void say2(WObject wObject)
     {
 	String name = (String) wObject.fn[0];
-
-	wObject.getResponse().write("self:" + name);
 	try
 	{
+	    wObject.getResponse().write("self:" + name);
 	    /**
-	     *对于OutType.NoResponse,需要手动关闭。
+	     * 对于OutType.NoResponse,需要手动关闭。
 	     */
 	    wObject.getResponse().close();
 	}

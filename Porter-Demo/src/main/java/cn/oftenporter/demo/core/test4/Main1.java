@@ -6,9 +6,10 @@ import org.slf4j.LoggerFactory;
 import cn.oftenporter.demo.core.test4.porter.Hello1Porter;
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.init.PorterConf;
-import cn.oftenporter.porter.local.LCallback;
-import cn.oftenporter.porter.local.LRequest;
-import cn.oftenporter.porter.local.LResponse;
+import cn.oftenporter.porter.core.pbridge.PCallback;
+import cn.oftenporter.porter.core.pbridge.PName;
+import cn.oftenporter.porter.core.pbridge.PRequest;
+import cn.oftenporter.porter.core.pbridge.PResponse;
 import cn.oftenporter.porter.local.LocalMain;
 
 public class Main1
@@ -21,7 +22,7 @@ public class Main1
 	 */
 	final Logger logger = LoggerFactory.getLogger(Main1.class);
 
-	LocalMain localMain = new LocalMain(true, "", "utf-8");
+	LocalMain localMain = new LocalMain(true, new PName("P1"), "utf-8");
 
 	// 进行配置
 	PorterConf conf = localMain.newPorterConf();
@@ -31,42 +32,42 @@ public class Main1
 	localMain.startOne(conf);
 	logger.debug("****************************************************");
 	localMain.getBridge()
-		.request(new LRequest("/Test4Main/Hello1/say")
+		.request(new PRequest("/Test4Main/Hello1/say")
 			.setMethod(PortMethod.POST).addParam("age", "20"),
-			new LCallback()
+			new PCallback()
 			{
 
 			    @Override
-			    public void onResponse(LResponse lResponse)
+			    public void onResponse(PResponse lResponse)
 			    {
-				logger.debug(String.valueOf(lResponse.first()));
+				logger.debug(String.valueOf(lResponse.getResponse()));
 			    }
 			});
-	
-	localMain.getBridge()
-	.request(new LRequest("/Test4Main/Hello1/say2")
-		.setMethod(PortMethod.POST).addParam("age", "500"),
-		new LCallback()
-		{
 
-		    @Override
-		    public void onResponse(LResponse lResponse)
-		    {
-			logger.debug(String.valueOf(lResponse.first()));
-		    }
-		});
 	localMain.getBridge()
-	.request(new LRequest("/Test4Main/Hello1/say3")
-		.setMethod(PortMethod.POST).addParam("age", "300"),
-		new LCallback()
-		{
+		.request(new PRequest("/Test4Main/Hello1/say2")
+			.setMethod(PortMethod.POST).addParam("age", "500"),
+			new PCallback()
+			{
 
-		    @Override
-		    public void onResponse(LResponse lResponse)
-		    {
-			logger.debug(String.valueOf(lResponse.first()));
-		    }
-		});
+			    @Override
+			    public void onResponse(PResponse lResponse)
+			    {
+				logger.debug(String.valueOf(lResponse.getResponse()));
+			    }
+			});
+	localMain.getBridge()
+		.request(new PRequest("/Test4Main/Hello1/say3")
+			.setMethod(PortMethod.POST).addParam("age", "300"),
+			new PCallback()
+			{
+
+			    @Override
+			    public void onResponse(PResponse lResponse)
+			    {
+				logger.debug(String.valueOf(lResponse.getResponse()));
+			    }
+			});
 
 	logger.debug("****************************************************");
 	localMain.destroyAll();

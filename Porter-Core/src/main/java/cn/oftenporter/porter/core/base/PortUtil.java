@@ -116,11 +116,22 @@ public class PortUtil
         return checkTied(name);
     }
 
+    /**
+     * 检查名称是否含有非法字符。
+     *
+     * @param name
+     * @return
+     */
+    public static void checkName(String name) throws RuntimeException
+    {
+        checkTied(name);
+    }
+
     private static String checkTied(String tiedName)
     {
         if (!TIED_NAME_PATTERN.matcher(tiedName).find())
         {
-            throw new RuntimeException("Illegal tied '" + tiedName + "'(accepted-pattern:" + TIED_ACCEPTED + ")");
+            throw new RuntimeException("Illegal value '" + tiedName + "'(accepted-pattern:" + TIED_ACCEPTED + ")");
         }
         return tiedName;
     }
@@ -662,7 +673,7 @@ public class PortUtil
                 } else
                 {
                     name = new InNames.Name(nameStr, null);
-                    LOGGER.warn("No parser for [{}]({},tag={})", field, clazz,tag);
+                    LOGGER.warn("No parser for [{}]({},tag={})", field, clazz, tag);
                 }
                 if (backableSeek != null)
                 {
@@ -676,8 +687,9 @@ public class PortUtil
                             null)
                     {
                         name.typeParserId = backableSeek.getTypeId(name.varName);
-                        if(name.typeParserId!=null){
-                            LOGGER.debug("bind parser for [{}](parser id={})",field,backableSeek,name.typeParserId);
+                        if (name.typeParserId != null)
+                        {
+                            LOGGER.debug("bind parser for [{}](parser id={})", field, backableSeek, name.typeParserId);
                         }
                     }
                 }

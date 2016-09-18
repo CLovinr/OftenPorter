@@ -3,11 +3,10 @@ package cn.oftenporter.porter.local;
 import cn.oftenporter.porter.core.PortExecutor;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.ITypeParser;
-import cn.oftenporter.porter.core.base.WRequest;
-import cn.oftenporter.porter.core.base.WResponse;
 import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.init.PorterMain;
+import cn.oftenporter.porter.core.pbridge.*;
 import cn.oftenporter.porter.simple.DefaultPorterBridge;
 import cn.oftenporter.porter.simple.DefaultUrlDecoder;
 
@@ -17,30 +16,29 @@ import cn.oftenporter.porter.simple.DefaultUrlDecoder;
 public class LocalMain implements CommonMain
 {
     private PorterMain porterMain;
-    private LBridge bridge;
+    private PBridge bridge;
 
 
-    public LocalMain(boolean responseWhenException, String pathPrefix, String urlEncoding)
+    public LocalMain(boolean responseWhenException, PName pName, String urlEncoding)
     {
-        porterMain = new PorterMain();
-        bridge = new LBridge()
+        bridge = new PBridge()
         {
             @Override
-            public void request(LRequest request, LCallback callback)
+            public void request(PRequest request, PCallback callback)
             {
-                WRequest wreq = new LocalRequest(request);
-                WResponse wresp = new LocalResponse(callback);
-                PortExecutor.Request req = porterMain.forRequest(wreq, wresp);
+                LocalResponse resp = new LocalResponse(callback);
+                PortExecutor.Request req = porterMain.forRequest(request, resp);
                 if (req != null)
                 {
-                    porterMain.doRequest(req, wreq, wresp);
+                    porterMain.doRequest(req, request, resp);
                 }
             }
         };
-        porterMain.init(new DefaultUrlDecoder(pathPrefix, urlEncoding), responseWhenException);
+        porterMain = new PorterMain(pName, bridge);
+        porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
     }
 
-    public LBridge getBridge()
+    public PBridge getBridge()
     {
         return bridge;
     }
@@ -67,6 +65,12 @@ public class LocalMain implements CommonMain
     public void startOne(PorterConf porterConf)
     {
         porterMain.startOne(DefaultPorterBridge.defaultBridge(porterConf));
+    }
+
+    @Override
+    public PInit getPInit()
+    {
+        return porterMain.getPInit();
     }
 
     @Override

@@ -2,6 +2,11 @@ package cn.oftenporter.porter.core.init;
 
 import cn.oftenporter.porter.core.*;
 import cn.oftenporter.porter.core.base.*;
+import cn.oftenporter.porter.core.pbridge.PBridge;
+import cn.oftenporter.porter.core.pbridge.PInit;
+import cn.oftenporter.porter.core.pbridge.PName;
+import cn.oftenporter.porter.core.util.WPTool;
+import cn.oftenporter.porter.simple.DefaultPInit;
 import cn.oftenporter.porter.simple.DefaultTypeParserStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,12 +28,18 @@ public class PorterMain
     private Map<String, Object> globalAutoSet;
     private TypeParserStore globalParserStore;
     private List<CheckPassable> allGlobalChecks;
+    private PInit pInit;
 
-    public PorterMain()
+    /**
+     * @param pName  框架名称。
+     * @param bridge 只能访问当前实例的bridge。
+     */
+    public PorterMain(PName pName, PBridge bridge)
     {
         globalAutoSet = new ConcurrentHashMap<>();
         this.globalParserStore = new DefaultTypeParserStore();
         this.allGlobalChecks = new Vector<>();
+        pInit = new DefaultPInit(pName, bridge);
     }
 
     public PorterConf newPorterConf()
@@ -56,6 +67,12 @@ public class PorterMain
         portExecutor = new PortExecutor(globalAutoSet, globalParserStore, urlDecoder, responseWhenException);
     }
 
+
+    public PInit getPInit()
+    {
+        return pInit;
+    }
+
     private void checkInit()
     {
         if (!isInit)
@@ -81,7 +98,10 @@ public class PorterMain
     public synchronized void startOne(PorterBridge bridge) throws RuntimeException
     {
         checkInit();
-        if (portExecutor.containsContext(bridge.contextName()))
+        if (WPTool.isEmpty(bridge.contextName()))
+        {
+            throw new RuntimeException("Context name is empty!");
+        } else if (portExecutor.containsContext(bridge.contextName()))
         {
             throw new RuntimeException("Context named '" + bridge.contextName() + "' already exist!");
         }

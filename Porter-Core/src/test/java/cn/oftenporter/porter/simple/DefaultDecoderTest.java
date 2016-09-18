@@ -1,7 +1,9 @@
 package cn.oftenporter.porter.simple;
 
 import cn.oftenporter.porter.core.base.UrlDecoder;
-import  static org.junit.Assert.*;
+
+import static org.junit.Assert.*;
+
 import org.junit.Test;
 
 /**
@@ -10,12 +12,13 @@ import org.junit.Test;
 public class DefaultDecoderTest
 {
     @Test
-    public void testDecode(){
-        DefaultUrlDecoder defaultDecoder = new DefaultUrlDecoder("","utf-8");
+    public void testDecode()
+    {
+        DefaultUrlDecoder defaultDecoder = new DefaultUrlDecoder("utf-8");
 
         UrlDecoder.Result result = defaultDecoder.decode("/C1/Hello/say");
-        assertEquals("C1",result.contextName());
-        assertEquals("Hello",result.classTied());
-        assertEquals("say",result.funTied());
+        assertEquals("C1", result.contextName());
+        assertEquals("Hello", result.classTied());
+        assertEquals("say", result.funTied());
     }
 }

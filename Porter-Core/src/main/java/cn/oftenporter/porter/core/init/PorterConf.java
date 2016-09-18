@@ -24,7 +24,7 @@ public class PorterConf
     private boolean responseWhenException = true;
     private boolean enablePortInTiedNameDefault = true;
     private boolean isInited;
-    private String name = "OftenPorter";
+    private String name;
     private String contentEncoding = "utf-8";
 
 
@@ -54,6 +54,7 @@ public class PorterConf
     public void setContextName(String contextName)
     {
         checkInited();
+        PortUtil.checkName(contextName);
         this.name = contextName;
     }
 

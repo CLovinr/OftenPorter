@@ -16,26 +16,19 @@ import java.util.Map;
  */
 public class DefaultUrlDecoder implements UrlDecoder
 {
-    private String pathPrefix;
     private String encoding;
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultUrlDecoder.class);
 //    private static final String URL_CHARS = "a-zA-Z-0-9%_\\.\\*\\+\\$&=#-";
 //    private static final Pattern PATTERN = Pattern.compile("^/([" + URL_CHARS + "]+)/([" + URL_CHARS + "]*)$");
 
-    public DefaultUrlDecoder(String pathPrefix, String encoding)
+    public DefaultUrlDecoder(String encoding)
     {
-        this.pathPrefix = pathPrefix;
         this.encoding = encoding;
     }
 
     @Override
     public Result decode(String path)
     {
-        if (!path.startsWith(pathPrefix))
-        {
-            return null;
-        }
-        path = path.substring(pathPrefix.length());
         int index = path.indexOf('?');
 
         String tiedPath = index == -1 ? path : path.substring(0, index);

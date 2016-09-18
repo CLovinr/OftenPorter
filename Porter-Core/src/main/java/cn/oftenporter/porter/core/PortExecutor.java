@@ -7,6 +7,7 @@ import cn.oftenporter.porter.core.util.WPTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
@@ -464,7 +465,13 @@ public class PortExecutor
         {
             JResponse jResponse = new JResponse(ResultCode.EXCEPTION);
             jResponse.setDescription(WPTool.getMessage(throwable));
-            response.write(jResponse);
+            try
+            {
+                response.write(jResponse);
+            } catch (IOException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
         }
         close(response);
     }
@@ -473,7 +480,13 @@ public class PortExecutor
     {
         if (object != null)
         {
-            wObject.getResponse().write(object);
+            try
+            {
+                wObject.getResponse().write(object);
+            } catch (IOException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
         }
         close(wObject);
     }
@@ -484,7 +497,13 @@ public class PortExecutor
         {
             JResponse jResponse = new JResponse(ResultCode.ACCESS_DENIED);
             jResponse.setDescription(String.valueOf(obj));
-            wObject.getResponse().write(jResponse);
+            try
+            {
+                wObject.getResponse().write(jResponse);
+            } catch (IOException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
         }
         close(wObject);
     }
@@ -497,7 +516,13 @@ public class PortExecutor
             jResponse.setCode(ResultCode.PARAM_DEAL_EXCEPTION);
             jResponse.setDescription(reason.desc());
             jResponse.setResult(reason.toJSON());
-            wObject.getResponse().write(jResponse);
+            try
+            {
+                wObject.getResponse().write(jResponse);
+            } catch (IOException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
         }
         close(wObject);
     }
@@ -508,7 +533,13 @@ public class PortExecutor
         {
             JResponse jResponse = new JResponse(ResultCode.NOT_AVAILABLE);
             jResponse.setDescription("fun:" + result.toString());
-            wObject.getResponse().write(jResponse);
+            try
+            {
+                wObject.getResponse().write(jResponse);
+            } catch (IOException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
         }
         close(wObject);
     }
@@ -519,7 +550,13 @@ public class PortExecutor
         {
             JResponse jResponse = new JResponse(ResultCode.NOT_AVAILABLE);
             jResponse.setDescription("method:" + request.getMethod() + ",path:" + request.getPath());
-            response.write(jResponse);
+            try
+            {
+                response.write(jResponse);
+            } catch (IOException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
         }
         close(response);
     }

@@ -1,6 +1,7 @@
 package cn.oftenporter.demo.core.test3;
 
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.local.LocalMain;
 
 public class Main1
@@ -15,7 +16,7 @@ public class Main1
 	 * </pre>
 	 */
 
-	LocalMain localMain = new LocalMain(true,"","utf-8");
+	LocalMain localMain = new LocalMain(true,new PName("P1"), "utf-8");
 
 	// 进行配置
 	PorterConf conf = localMain.newPorterConf();

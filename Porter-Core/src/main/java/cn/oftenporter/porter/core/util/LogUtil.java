@@ -37,6 +37,11 @@ public class LogUtil
         StringBuilder sb = new StringBuilder();
         String name = stackTraceElement.getClassName();
         name = name.substring(name.lastIndexOf('.') + 1);
+        int index = name.indexOf('$');
+        if (index > 0)
+        {
+            name = name.substring(0, index);
+        }
         sb.append("at ").append(stackTraceElement.getClassName()).append(".").append(stackTraceElement.getMethodName())
                 .append("(" + name + ".java:" + stackTraceElement.getLineNumber() + ")");
         return sb.toString();

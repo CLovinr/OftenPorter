@@ -5,6 +5,9 @@ import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.init.PorterMain;
+import cn.oftenporter.porter.core.pbridge.*;
+import cn.oftenporter.porter.core.util.WPTool;
+import cn.oftenporter.porter.local.LocalResponse;
 import cn.oftenporter.porter.simple.DefaultPorterBridge;
 import cn.oftenporter.porter.simple.DefaultUrlDecoder;
 
@@ -20,7 +23,7 @@ import java.io.IOException;
  * </p>
  * <pre>
  *     初始参数有：
- *     pathPrefix:路径前缀,默认为""
+ *     pname:框架实例名称，默认为"WMainServlet".
  *     urlEncoding:地址参数的字符编码,默认为utf-8
  *     responseWhenException:默认为true。
  * </pre>
@@ -32,7 +35,7 @@ public class WMainServlet extends HttpServlet implements CommonMain
 
     public WMainServlet()
     {
-        porterMain = new PorterMain();
+
     }
 
     @Override
@@ -106,10 +109,10 @@ public class WMainServlet extends HttpServlet implements CommonMain
     {
         super.init();
 
-        String pathPrefix = getInitParameter("pathPrefix");
-        if (pathPrefix == null)
+        String pname = getInitParameter("pname");
+        if (WPTool.isEmpty(pname))
         {
-            pathPrefix = "";
+            pname = WMainServlet.class.getSimpleName();
         }
 
         String urlEncoding = getInitParameter("urlEncoding");
@@ -118,8 +121,23 @@ public class WMainServlet extends HttpServlet implements CommonMain
             urlEncoding = "utf-8";
         }
 
+        PBridge bridge = new PBridge()
+        {
+            @Override
+            public void request(PRequest request, PCallback callback)
+            {
+                LocalResponse resp = new LocalResponse(callback);
+                PortExecutor.Request req = porterMain.forRequest(request, resp);
+                if (req != null)
+                {
+                    porterMain.doRequest(req, request, resp);
+                }
+            }
+        };
+        porterMain = new PorterMain(new PName(pname), bridge);
+
         boolean responseWhenException = !"false".equals(getInitParameter("responseWhenException"));
-        porterMain.init(new DefaultUrlDecoder(pathPrefix, urlEncoding), responseWhenException);
+        porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
 
     }
 
@@ -188,6 +206,12 @@ public class WMainServlet extends HttpServlet implements CommonMain
     public void startOne(PorterConf porterConf)
     {
         porterMain.startOne(DefaultPorterBridge.defaultBridge(porterConf));
+    }
+
+    @Override
+    public PInit getPInit()
+    {
+        return porterMain.getPInit();
     }
 
     @Override
