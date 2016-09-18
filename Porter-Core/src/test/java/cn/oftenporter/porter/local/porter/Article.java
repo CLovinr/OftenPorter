@@ -10,13 +10,13 @@ import java.util.Date;
  */
 public class Article
 {
-    @PortInObj.InNece
+    @PortInObj.Nece("title")
     private String title;
-    @PortInObj.InNece
+    @PortInObj.Nece("time")
     private long time;
-    @PortInObj.InUnNece
+    @PortInObj.UnNece("content")
     private String content;
-    @PortInObj.InUnNece
+    @PortInObj.UnNece("comments")
     private JSONArray comments;
 
     @Override

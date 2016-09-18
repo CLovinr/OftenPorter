@@ -1,11 +1,17 @@
 package cn.oftenporter.porter.local.porter;
 
+import cn.oftenporter.porter.core.TypeTo;
 import cn.oftenporter.porter.core.annotation.*;
+import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.TiedType;
 import cn.oftenporter.porter.core.base.WObject;
+import cn.oftenporter.porter.core.util.LogUtil;
 import cn.oftenporter.porter.simple.parsers.IntParser;
+import com.alibaba.fastjson.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Random;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/4.
@@ -14,6 +20,7 @@ import org.slf4j.LoggerFactory;
         @Parser.parse(names = {"age"}, parsers = {IntParser.class})
 })
 @PortIn(value = "Hello", tiedType = TiedType.REST)
+@PortInObj({User.class})
 public class HelloPorter
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloPorter.class);
@@ -24,39 +31,77 @@ public class HelloPorter
     @AutoSet
     private static AutoSetObj autoSetObj2;
 
-    @AutoSet(oneInstance = false)
+    @AutoSet(range = AutoSet.Range.New)
     private AutoSetObj autoSetObj3;
 
     @AutoSet("globalName")
     private String globalSet;
 
+    @AutoSet
+    Random random;
+
+    @AutoSet
+    private static TypeTo typeTo;
+
     @PortIn(value = "say", nece = {"name", "age"})
     public Object say(WObject wObject)
     {
         int age = (int) wObject.fn[1];
-        return "Hello World!" + wObject.fn[0] + ",age=" + age;
+        return wObject.fn[0] + "+" + age;
+    }
+
+    @PortIn(tiedType = TiedType.REST, nece = {"sex"}, method = PortMethod.POST)
+    @Parser.parse(names = "sex", parsers = IntParser.class)
+    public Object sayHelloPost(WObject wObject)
+    {
+        int sex = (int) wObject.fn[0];
+        return wObject.restValue + ":" + sex;
+    }
+
+    @PortIn(tiedType = TiedType.REST, nece = {"sex"})
+    public Object sayHello(WObject wObject)
+    {
+        String sex = (String) wObject.fn[0];
+        return wObject.restValue + "=" + sex;
     }
 
     @PortIn("parseObject")
-    @Parser.parse(names = "myAge",parsers = IntParser.class)
-    @PortInObj(types = {Article.class, User.class})
-    public void parseObject(WObject wObject)
+    @Parser.parse(names = "myAge", parsers = IntParser.class)
+    @PortInObj({Article.class})
+    public Object parseObject(WObject wObject)
     {
-        Article article = wObject.inObject(Article.class, 0);
-        User user = wObject.inObject(User.class, 1);
-        LOGGER.debug("{}\n{}", article, user);
+        Article article = wObject.finObject(Article.class, 0);
+        User user = wObject.cinObject(User.class, 0);
+        // LOGGER.debug("{}\n{}", article, user);
+
+        return random.nextBoolean() ? user : article;
     }
 
-    @PortIn(tiedType = TiedType.REST)
-    public Object sayHello(WObject wObject)
-    {
-        return "Hello World-REST!" + wObject.restValue;
-    }
 
     @PortStart
     public void onStart()
     {
-        LOGGER.debug("{},2:{},3:{},globalName={}", autoSetObj, autoSetObj2, autoSetObj3, globalSet);
+        try
+        {
+            LOGGER.debug("{},{},{},{}", autoSetObj, autoSetObj2, autoSetObj3, globalSet);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("name", "TypeTo转换");
+            jsonObject.put("myAge", "19");
+            typeTo.bind(User.class, "myAge", new IntParser());
+            User user = typeTo.parse(User.class, jsonObject);
+
+            jsonObject = new JSONObject();
+            jsonObject.put("name", "TypeTo转换");
+            jsonObject.put("myAge", "190");
+
+            Person person = typeTo.parse(Person.class, jsonObject);
+
+            LOGGER.debug("{},{}", user, person);
+        } catch (Exception e)
+        {
+            LogUtil.printErrPosLn(e);
+        }
+
     }
 
     @PortDestroy

@@ -7,9 +7,9 @@ import cn.oftenporter.porter.core.annotation.PortInObj;
  */
 public class User
 {
-    @PortInObj.InNece
+    @PortInObj.Nece("name")
     public String name;
-    @PortInObj.InNece(autoParse = false)
+    @PortInObj.Nece(value = "myAge",autoParse = false)
     public int myAge;
 
     @Override

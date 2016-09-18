@@ -6,6 +6,8 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -41,35 +43,36 @@ public class ParserUtilTest
         assertEquals(JSONArrayParser.class, ParserUtil.getTypeParser(JSONArray.class));
         assertEquals(JSONObjectParser.class, ParserUtil.getTypeParser(JSONObject.class));
         assertEquals(StringParser.class, ParserUtil.getTypeParser(String.class));
+        assertEquals(JSON2MapParser.class, ParserUtil.getTypeParser(Map.class));
 
-        Class<?> type1=int.class;
-        Class<?> type2=Integer.class;
-        assertNotSame(type1,type2);
+        Class<?> type1 = int.class;
+        Class<?> type2 = Integer.class;
+        assertNotSame(type1, type2);
 
         int n = 0;
         Object v = n;
         assertFalse(v.getClass().isPrimitive());
-        assertEquals(type2,v.getClass());
-        assertNotSame(type1,v.getClass());
-        v=Integer.valueOf(1);
-        assertEquals(type2,v.getClass());
-        assertNotSame(type1,v.getClass());
+        assertEquals(type2, v.getClass());
+        assertNotSame(type1, v.getClass());
+        v = Integer.valueOf(1);
+        assertEquals(type2, v.getClass());
+        assertNotSame(type1, v.getClass());
 
-        v=true;
+        v = true;
         assertTrue(v instanceof Boolean);
-        v='1';
+        v = '1';
         assertTrue(v instanceof Character);
-        v=(byte)1;
+        v = (byte) 1;
         assertTrue(v instanceof Byte);
-        v=(short)1;
+        v = (short) 1;
         assertTrue(v instanceof Short);
-        v=(int)1;
+        v = (int) 1;
         assertTrue(v instanceof Integer);
-        v=1L;
+        v = 1L;
         assertTrue(v instanceof Long);
-        v=1.0f;
+        v = 1.0f;
         assertTrue(v instanceof Float);
-        v=1.0d;
+        v = 1.0d;
         assertTrue(v instanceof Double);
 
     }
