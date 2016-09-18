@@ -1,12 +1,14 @@
 package cn.oftenporter.porter.local;
 
-import cn.oftenporter.porter.core.base.ParamDealt;
-import cn.oftenporter.porter.core.base.UrlDecoder;
+import cn.oftenporter.porter.core.PortExecutor;
+import cn.oftenporter.porter.core.base.CheckPassable;
+import cn.oftenporter.porter.core.base.ITypeParser;
+import cn.oftenporter.porter.core.base.WRequest;
+import cn.oftenporter.porter.core.base.WResponse;
 import cn.oftenporter.porter.core.init.CommonMain;
-import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.init.PorterMain;
-import cn.oftenporter.porter.simple.DefaultParamDealt;
+import cn.oftenporter.porter.simple.DefaultPorterBridge;
 import cn.oftenporter.porter.simple.DefaultUrlDecoder;
 
 /**
@@ -16,35 +18,26 @@ public class LocalMain implements CommonMain
 {
     private PorterMain porterMain;
     private LBridge bridge;
-    private String pathPrefix;
-    private String urlEncoding;
 
-    /**
-     * url参数的字符编码为utf-8
-     */
-    public LocalMain(String name, String pathPrefix)
-    {
-        this(name, pathPrefix, "utf-8");
-    }
 
-    /**
-     * @param name        名称
-     * @param pathPrefix  路径前缀
-     * @param urlEncoding url参数的字符编码
-     */
-    public LocalMain(String name, String pathPrefix, String urlEncoding)
+    public LocalMain(boolean responseWhenException, String pathPrefix, String urlEncoding)
     {
-        this.pathPrefix = pathPrefix;
-        this.urlEncoding = urlEncoding;
-        porterMain = new PorterMain(name);
+        porterMain = new PorterMain();
         bridge = new LBridge()
         {
             @Override
             public void request(LRequest request, LCallback callback)
             {
-                porterMain.doRequest(new LocalRequest(request), new LocalResponse(callback), request.getMethod());
+                WRequest wreq = new LocalRequest(request);
+                WResponse wresp = new LocalResponse(callback);
+                PortExecutor.Request req = porterMain.forRequest(wreq, wresp);
+                if (req != null)
+                {
+                    porterMain.doRequest(req, wreq, wresp);
+                }
             }
         };
+        porterMain.init(new DefaultUrlDecoder(pathPrefix, urlEncoding), responseWhenException);
     }
 
     public LBridge getBridge()
@@ -53,39 +46,50 @@ public class LocalMain implements CommonMain
     }
 
     @Override
-    public void start()
+    public void addGlobalAutoSet(String name, Object object)
     {
-        porterMain.start(new PorterBridge()
-        {
-            @Override
-            public UrlDecoder urlDecoder()
-            {
-                return new DefaultUrlDecoder(pathPrefix, urlEncoding);
-            }
-
-            @Override
-            public ParamDealt paramDealt()
-            {
-                return new DefaultParamDealt();
-            }
-        });
+        porterMain.addGlobalAutoSet(name, object);
     }
 
     @Override
-    public void destroy()
+    public void addGlobalTypeParser(ITypeParser typeParser)
     {
-        porterMain.destroy();
+        porterMain.addGlobalTypeParser(typeParser);
     }
 
     @Override
-    public String getName()
+    public void addGlobalCheck(CheckPassable checkPassable) throws RuntimeException
     {
-        return porterMain.getName();
+        porterMain.addGlobalCheck(checkPassable);
     }
 
     @Override
-    public PorterConf getPorterConf()
+    public void startOne(PorterConf porterConf)
     {
-        return porterMain.getPorterConf();
+        porterMain.startOne(DefaultPorterBridge.defaultBridge(porterConf));
+    }
+
+    @Override
+    public void destroyOne(String contextName)
+    {
+        porterMain.destroyOne(contextName);
+    }
+
+    @Override
+    public void enableOne(String contextName, boolean enable)
+    {
+        porterMain.enableContext(contextName, enable);
+    }
+
+    @Override
+    public void destroyAll()
+    {
+        porterMain.destroyAll();
+    }
+
+    @Override
+    public PorterConf newPorterConf()
+    {
+        return porterMain.newPorterConf();
     }
 }

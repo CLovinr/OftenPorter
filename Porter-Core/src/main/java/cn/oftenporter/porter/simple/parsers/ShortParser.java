@@ -1,12 +1,12 @@
 package cn.oftenporter.porter.simple.parsers;
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
+
 
 /**
  * Created by 宇宙之灵 on 2015/9/14.
  */
-public class ShortParser implements TypeParser
+public class ShortParser extends TypeParser
 {
     @Override
     public ParseResult parse(@NotNull String name, @NotNull Object value)
@@ -25,7 +25,7 @@ public class ShortParser implements TypeParser
             result = new ParseResult(v);
         } catch (NumberFormatException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

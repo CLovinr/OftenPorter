@@ -1,7 +1,8 @@
 package cn.oftenporter.porter.core.annotation;
 
 
-import cn.oftenporter.porter.core.base.TypeParser;
+import cn.oftenporter.porter.core.base.ITypeParser;
+import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
 
 import java.lang.annotation.*;
@@ -15,6 +16,7 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
+@Inherited
 @Documented
 public @interface Parser
 {
@@ -24,6 +26,7 @@ public @interface Parser
      */
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.TYPE, ElementType.METHOD})
+    @Inherited
     @Documented
     public @interface parse
     {
@@ -33,14 +36,14 @@ public @interface Parser
         String[] names();
 
         /**
-         * 转换的类。优先于{@linkplain #globals()}。当提供一个时，所有的共有这一个；如果是多个，则必须与{@linkplain #names()}一一对应。
+         * 转换的类(需要有无参构造函数)。优先于{@linkplain #globals()}。当提供一个时，所有的共有这一个；如果是多个，则必须与{@linkplain #names()}一一对应。
          */
-        Class<? extends TypeParser>[] parsers() default {};
+        Class<? extends ITypeParser>[] parsers() default {};
 
         /**
          * 全局转换类的绑定的名称。当提供一个时，所有的共有这一个；如果是多个，则必须与{@linkplain #names()}一一对应。
          * <br>
-         * 见{@linkplain PorterConf#addGlobalTypeParser(String, TypeParser)}
+         * 见{@linkplain CommonMain#addGlobalTypeParser(ITypeParser)}
          */
         String[] globals() default {};
     }

@@ -4,73 +4,220 @@ import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.util.WPTool;
-import cn.oftenporter.porter.simple.DefaultFailedReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
 public class PortExecutor
 {
-    private PortContext portContext;
-    private UrlDecoder urlDecoder;
-    private ParamSourceHandleManager paramSourceHandleManager;
-    private CheckPassable[] globalChecks;
-    private ParamDealt paramDealt;
-    private boolean responseWhenException;
-    private static final Logger LOGGER = LoggerFactory.getLogger(PortContext.class);
 
-    public PortExecutor(PortContext portContext,
-            ParamSourceHandleManager paramSourceHandleManager, PorterBridge bridge, PorterConf porterConf)
+    public static class Context
     {
-        this.portContext = portContext;
-        this.paramSourceHandleManager = paramSourceHandleManager;
-        this.urlDecoder = bridge.urlDecoder();
-        this.paramDealt = bridge.paramDealt();
-        this.responseWhenException = porterConf.isResponseWhenException();
-        this.globalChecks = porterConf.getGlobalChecks().toArray(new CheckPassable[0]);
+        public final PortContext portContext;
+        private CheckPassable[] contextChecks;
+        private ParamDealt paramDealt;
+        private boolean responseWhenException;
+        Map<String, Object> globalAutoSetMap;
+        Map<String, Object> contextRuntimeMap;
+        private ParamSourceHandleManager paramSourceHandleManager;
+        public final StateListener stateListenerForAll;
+
+        private boolean isEnable = true;
+        private String name, contentEncoding;
+
+        public Context(PortContext portContext, CheckPassable[] contextChecks,
+                ParamDealt paramDealt, boolean responseWhenException, Map<String, Object> globalAutoSetMap,
+                Map<String, Object> contextRuntimeMap, ParamSourceHandleManager paramSourceHandleManager,
+                StateListener stateListenerForAll)
+        {
+            this.portContext = portContext;
+            this.contextChecks = contextChecks;
+            this.paramDealt = paramDealt;
+            this.responseWhenException = responseWhenException;
+            this.globalAutoSetMap = globalAutoSetMap;
+            this.contextRuntimeMap = contextRuntimeMap;
+            this.paramSourceHandleManager = paramSourceHandleManager;
+            this.stateListenerForAll = stateListenerForAll;
+            setEnable(true);
+        }
+
+
+        public String getContentEncoding()
+        {
+            return contentEncoding;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public void setEnable(boolean enable)
+        {
+            isEnable = enable;
+        }
+
+        public boolean isEnable()
+        {
+            return isEnable;
+        }
     }
 
-    public void doRequest(WRequest request, WResponse response, PortMethod method)
+    public static class Request
+    {
+        public Context context;
+        public UrlDecoder.Result result;
+
+        public Request(Context context, UrlDecoder.Result result)
+        {
+            this.context = context;
+            this.result = result;
+        }
+    }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PortExecutor.class);
+    private Map<String, Context> contextMap = new ConcurrentHashMap<>();
+    private Map<String, Object> globalAutoSetMap;
+    private TypeParserStore globalParserStore;
+    private CheckPassable[] allGlobalChecks;
+    private UrlDecoder urlDecoder;
+
+    private boolean responseWhenException;
+
+    public PortExecutor( Map<String, Object> globalAutoSetMap,
+            TypeParserStore globalParserStore, UrlDecoder urlDecoder,
+            boolean responseWhenException)
+    {
+        this.globalAutoSetMap = globalAutoSetMap;
+        this.globalParserStore = globalParserStore;
+        this.urlDecoder = urlDecoder;
+        this.responseWhenException = responseWhenException;
+    }
+
+    public void initAllGlobalChecks(CheckPassable[] allGlobalChecks)
+    {
+        this.allGlobalChecks = allGlobalChecks;
+    }
+
+    public void addContext(PorterBridge bridge, PortContext portContext, StateListener stateListenerForAll)
+    {
+        PorterConf porterConf = bridge.porterConf();
+        Context context = new Context(portContext, porterConf.getContextChecks().toArray(new CheckPassable[0]),
+                bridge.paramDealt(), porterConf.isResponseWhenException(), globalAutoSetMap,
+                porterConf.getContextRuntimeMap(),
+                bridge.paramSourceHandleManager(), stateListenerForAll);
+        context.name = bridge.contextName();
+        context.contentEncoding = porterConf.getContentEncoding();
+        contextMap.put(bridge.contextName(), context);
+    }
+
+    /**
+     * 移除指定的context
+     *
+     * @param contextName context名称
+     * @return 返回移除的Context，可能够为null。
+     */
+    public Context removeContext(String contextName)
+    {
+        return contextMap.remove(contextName);
+    }
+
+    /**
+     * 是否包含指定的context
+     *
+     * @param contextName context名称
+     * @return 存在返回true，不存在返回false。
+     */
+    public boolean containsContext(String contextName)
+    {
+        return contextMap.containsKey(contextName);
+    }
+
+    /**
+     * 启用或禁用指定context
+     *
+     * @param contextName context名称
+     * @param enable      是否启用
+     * @return 返回对应Context，可能为null。
+     */
+    public Context enableContext(String contextName, boolean enable)
+    {
+        Context context = contextMap.get(contextName);
+        if (context != null)
+        {
+            context.setEnable(enable);
+        }
+        return context;
+    }
+
+    public void doRequest(Request req, WRequest request, WResponse response)
     {
         try
         {
-            _doRequest(request, response, method);
+            _doRequest(req, request, response);
         } catch (Exception e)
         {
             LOGGER.error(e.getMessage(), e);
-            ex(response, e);
+            ex(response, e, responseWhenException);
         }
     }
 
+    public void clear()
+    {
+        contextMap.clear();
+    }
 
-    private void _doRequest(WRequest request, WResponse response,
-            PortMethod method) throws InvocationTargetException, IllegalAccessException
+    public Iterator<Context> contextIterator()
+    {
+        return contextMap.values().iterator();
+    }
+
+
+    public Request forRequest(WRequest request, WResponse response)
     {
         UrlDecoder.Result result = urlDecoder.decode(request.getPath());
-        WObjectImpl wObject = new WObjectImpl(request, response);
-        if (result == null)
+        Context context;
+        if (result == null || (context = contextMap.get(result.contextName())) == null || !context.isEnable)
         {
-            exNotFoundClassPort(request, response);
-            return;
+            exNotFoundClassPort(request, response, responseWhenException);
+            return null;
+        } else
+        {
+            return new Request(context, result);
         }
-        WPort classPort = portContext.getClassPort(result.classTied());
+    }
 
-        if (classPort == null)
+    private void _doRequest(Request req, WRequest request,
+            WResponse response) throws InvocationTargetException, IllegalAccessException
+    {
+        Context context = req.context;
+        UrlDecoder.Result result = req.result;
+
+        WObjectImpl wObject = new WObjectImpl(request, response, context);
+
+        WPort classPort = context.portContext.getClassPort(result.classTied());
+
+        WPort funPort;
+
+        if (classPort == null || (funPort = classPort.getChild(result, request.getMethod())) == null)
         {
-            exNotFoundClassPort(request, response);
+            exNotFoundClassPort(request, response, context.responseWhenException);
             return;
         }
 
         //全局通过检测
-        Object rs = globalCheck(wObject);
+        Object rs = globalCheck(context, wObject);
         if (rs != null)
         {
-            exCheckPassable(wObject, rs);
+            exCheckPassable(wObject, rs, context.responseWhenException);
             return;
         }
 
@@ -81,39 +228,50 @@ public class PortExecutor
         wObject.cinner = PortUtil.newArray(inNames.inner);
         wObject.cInNames = inNames;
 
-        ParamSource paramSource = getParamSource(result, method, request);
+        ParamSource paramSource = getParamSource(context, result, request);
 
-        TypeParserNameStoreImpl mTypeParserNameStoreImpl = new TypeParserNameStoreImpl(portContext.getTypeParserStore(),
-                classPort);
+        TypeParserStore typeParserStore = globalParserStore;
+
 
         //类参数处理
-        ParamDealt.FailedReason failedReason = paramDeal(inNames, wObject.cn, wObject.cu, paramSource,
-                mTypeParserNameStoreImpl);
+        ParamDealt.FailedReason failedReason = PortUtil
+                .paramDeal(context.paramDealt, inNames, wObject.cn, wObject.cu, paramSource,
+                        typeParserStore);
         if (failedReason != null)
         {
-            exParamDeal(wObject, failedReason);
+            exParamDeal(wObject, failedReason, context.responseWhenException);
             return;
         }
+
+
+        ///////////////////////////
+        //转换成类或接口对象
+        failedReason = paramDealOfPortInObj(context, classPort, true, wObject, paramSource, typeParserStore);
+        if (failedReason != null)
+        {
+            exParamDeal(wObject, failedReason, context.responseWhenException);
+            return;
+        }
+        //////////////////////////////
 
 
         //类通过检测
-        rs = willPass(classPort, wObject, CheckPassable.Type.CLASS);
+        rs = willPass(context, classPort, wObject, CheckPassable.DuringType.CLASS);
         if (rs != null)
         {
-            exCheckPassable(wObject, rs);
+            exCheckPassable(wObject, rs, context.responseWhenException);
             return;
         }
 
         //////////////////////////
         //////////////////////////
 
-        WPort funPort = classPort.getChild(result, method);
+
         if (funPort == null)
         {
-            exNotFoundFun(wObject, result);
+            exNotFoundFun(wObject, result, context.responseWhenException);
             return;
         }
-        mTypeParserNameStoreImpl.setMethodStore(funPort);
         if (funPort.getTiedType() == TiedType.REST)
         {
             wObject.restValue = result.funTied();
@@ -128,28 +286,29 @@ public class PortExecutor
 
         //函数参数处理
 
-        failedReason = paramDeal(inNames, wObject.fn, wObject.fu, paramSource, mTypeParserNameStoreImpl);
+        failedReason = PortUtil
+                .paramDeal(context.paramDealt, inNames, wObject.fn, wObject.fu, paramSource, typeParserStore);
         if (failedReason != null)
         {
-            exParamDeal(wObject, failedReason);
+            exParamDeal(wObject, failedReason, context.responseWhenException);
             return;
         }
         ///////////////////////////
         //转换成类或接口对象
-        failedReason = paramDealOfPortInObj(funPort, wObject, paramSource, mTypeParserNameStoreImpl);
+        failedReason = paramDealOfPortInObj(context, funPort, false, wObject, paramSource, typeParserStore);
         if (failedReason != null)
         {
-            exParamDeal(wObject, failedReason);
+            exParamDeal(wObject, failedReason, context.responseWhenException);
             return;
         }
         //////////////////////////////
 
 
         //函数通过检测
-        rs = willPass(funPort, wObject, CheckPassable.Type.METHOD);
+        rs = willPass(context, funPort, wObject, CheckPassable.DuringType.METHOD);
         if (rs != null)
         {
-            exCheckPassable(wObject, rs);
+            exCheckPassable(wObject, rs, context.responseWhenException);
             return;
         }
 
@@ -174,70 +333,67 @@ public class PortExecutor
     }
 
     /**
-     * 用于转换类。
+     * 用于处理对象绑定。
      *
-     * @param funPort
+     * @param wPort
+     * @param isInClass
+     * @param wObjectImpl
      * @param paramSource
-     * @param mTypeParserNameStoreImpl @return
+     * @param currentTypeParserStore
+     * @return
      */
-    private ParamDealt.FailedReason paramDealOfPortInObj(WPort funPort, WObjectImpl wObjectImpl,
-            ParamSource paramSource, TypeParserNameStoreImpl mTypeParserNameStoreImpl)
+    private ParamDealt.FailedReason paramDealOfPortInObj(Context context, WPort wPort, boolean isInClass,
+            WObjectImpl wObjectImpl,
+            ParamSource paramSource, TypeParserStore currentTypeParserStore)
     {
         ParamDealt.FailedReason reason = null;
-        WPortInObj inObj = funPort.getWPortInObj();
+        WPortInObj inObj = wPort.getWPortInObj();
         if (inObj == null)
         {
             return null;
         }
         WPortInObj.One[] ones = inObj.ones;
         Object[] inObjects = new Object[ones.length];
-        wObjectImpl.inObjs = inObjects;
+        if (isInClass)
+        {
+            wObjectImpl.cinObjs = inObjects;
+        } else
+        {
+            wObjectImpl.finObjs = inObjects;
+        }
         for (int i = 0; i < ones.length; i++)
         {
             WPortInObj.One one = ones[i];
-            if (one.isObject())
-            {//类
-                try
-                {
-                    Object[] neces = PortUtil.newArray(one.inNames.nece);
-                    Object[] unneces = PortUtil.newArray(one.inNames.unece);
-                    reason = paramDeal(one.inNames, neces, unneces, paramSource, mTypeParserNameStoreImpl);
-                    if (reason == null)
-                    {
-                        Object object = WPTool.newObject(one.clazz);
-
-                        for (int k = 0; k < neces.length; k++)
-                        {
-                            one.neceObjFields[k].set(object, neces[k]);
-                        }
-
-                        for (int k = 0; k < unneces.length; k++)
-                        {
-                            one.unneceObjFields[k].set(object, unneces[k]);
-                        }
-
-                        inObjects[i] = object;
-                    }
-                } catch (Exception e)
-                {
-                    LOGGER.error(e.getMessage(), e);
-                    reason = DefaultFailedReason.parsePortInObjException(e.getMessage());
-                    break;
-                }
+            Object object = PortUtil.paramDealOne(context.paramDealt, one, paramSource, currentTypeParserStore);
+            if (object instanceof ParamDealt.FailedReason)
+            {
+                return (ParamDealt.FailedReason) object;
             } else
-            {//接口
-                throw new RuntimeException("stub!");
+            {
+                inObjects[i] = object;
             }
         }
 
         return reason;
     }
 
-    private Object globalCheck(WObject wObject)
+    private Object globalCheck(Context context, WObject wObject)
     {
-        for (int i = 0; i < globalChecks.length; i++)
+        CheckPassable[] allGlobal = this.allGlobalChecks;
+
+        for (int i = 0; i < allGlobal.length; i++)
         {
-            Object rs = globalChecks[i].willPass(wObject, CheckPassable.Type.GLOBAL);
+            Object rs = allGlobal[i].willPass(wObject, CheckPassable.DuringType.GLOBAL);
+            if (rs != null)
+            {
+                return rs;
+            }
+        }
+
+        CheckPassable[] contextChecks = context.contextChecks;
+        for (int i = 0; i < contextChecks.length; i++)
+        {
+            Object rs = contextChecks[i].willPass(wObject, CheckPassable.DuringType.GLOBAL);
             if (rs != null)
             {
                 return rs;
@@ -249,8 +405,9 @@ public class PortExecutor
     /**
      * 通过检测
      */
-    private Object willPass(WPort wport, WObject wObject, CheckPassable.Type type)
+    private Object willPass(Context context, WPort wport, WObject wObject, CheckPassable.DuringType type)
     {
+        PortContext portContext = context.portContext;
         Class<? extends CheckPassable>[] cps = wport.getChecks();
         for (int i = 0; i < cps.length; i++)
         {
@@ -264,33 +421,18 @@ public class PortExecutor
         return null;
     }
 
-    /**
-     * 参数处理
-     *
-     * @return
-     */
-    private ParamDealt.FailedReason paramDeal(InNames inNames, Object[] nece, Object[] unnece, ParamSource paramSource,
-            TypeParserStore typeParserStore)
-    {
-        ParamDealt.FailedReason reason = paramDealt.deal(inNames.nece, nece, true, paramSource, typeParserStore);
-        if (reason == null)
-        {
-            reason = paramDealt.deal(inNames.unece, unnece, false, paramSource, typeParserStore);
-        }
-        return reason;
-    }
 
     /**
      * 整合地址栏查询参数。
      *
      * @return
      */
-    private ParamSource getParamSource(final UrlDecoder.Result result, PortMethod method, WRequest request)
+    private ParamSource getParamSource(Context context, final UrlDecoder.Result result, WRequest request)
     {
-        ParamSourceHandle handle = paramSourceHandleManager.fromName(result.classTied());
+        ParamSourceHandle handle = context.paramSourceHandleManager.fromName(result.classTied());
         if (handle == null)
         {
-            handle = paramSourceHandleManager.fromMethod(method);
+            handle = context.paramSourceHandleManager.fromMethod(request.getMethod());
         }
         ParamSource ps;
         if (handle == null)
@@ -316,12 +458,12 @@ public class PortExecutor
         WPTool.close(response);
     }
 
-    private void ex(WResponse response, Throwable throwable)
+    private void ex(WResponse response, Throwable throwable, boolean responseWhenException)
     {
         if (responseWhenException)
         {
             JResponse jResponse = new JResponse(ResultCode.EXCEPTION);
-            jResponse.setDescription(throwable.getMessage());
+            jResponse.setDescription(WPTool.getMessage(throwable));
             response.write(jResponse);
         }
         close(response);
@@ -336,7 +478,7 @@ public class PortExecutor
         close(wObject);
     }
 
-    private void exCheckPassable(WObject wObject, Object obj)
+    private void exCheckPassable(WObject wObject, Object obj, boolean responseWhenException)
     {
         if (responseWhenException)
         {
@@ -347,7 +489,7 @@ public class PortExecutor
         close(wObject);
     }
 
-    private void exParamDeal(WObject wObject, ParamDealt.FailedReason reason)
+    private void exParamDeal(WObject wObject, ParamDealt.FailedReason reason, boolean responseWhenException)
     {
         if (responseWhenException)
         {
@@ -360,7 +502,7 @@ public class PortExecutor
         close(wObject);
     }
 
-    private void exNotFoundFun(WObject wObject, UrlDecoder.Result result)
+    private void exNotFoundFun(WObject wObject, UrlDecoder.Result result, boolean responseWhenException)
     {
         if (responseWhenException)
         {
@@ -371,12 +513,12 @@ public class PortExecutor
         close(wObject);
     }
 
-    private void exNotFoundClassPort(WRequest request, WResponse response)
+    private void exNotFoundClassPort(WRequest request, WResponse response, boolean responseWhenException)
     {
         if (responseWhenException)
         {
             JResponse jResponse = new JResponse(ResultCode.NOT_AVAILABLE);
-            jResponse.setDescription("path:" + request.getPath());
+            jResponse.setDescription("method:" + request.getMethod() + ",path:" + request.getPath());
             response.write(jResponse);
         }
         close(response);

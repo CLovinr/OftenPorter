@@ -4,6 +4,7 @@ import java.util.Enumeration;
 import java.util.Map;
 
 /**
+ * 用于获取参数的源。
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
 public interface ParamSource

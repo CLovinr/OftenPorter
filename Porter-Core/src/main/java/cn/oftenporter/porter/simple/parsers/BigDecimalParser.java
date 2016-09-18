@@ -2,13 +2,12 @@ package cn.oftenporter.porter.simple.parsers;
 
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
 
 import java.math.BigDecimal;
 
 /**
  */
-public class BigDecimalParser implements TypeParser
+public class BigDecimalParser extends TypeParser
 {
     @Override
     public ParseResult parse(@NotNull String name, @NotNull Object value)
@@ -29,7 +28,7 @@ public class BigDecimalParser implements TypeParser
             result = new ParseResult(v);
         } catch (NumberFormatException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

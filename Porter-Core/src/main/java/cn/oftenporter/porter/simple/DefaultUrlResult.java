@@ -13,13 +13,21 @@ import java.util.Map;
 class DefaultUrlResult implements UrlDecoder.Result
 {
     private Map<String, Object> params;
-    private String classTied, funTied;
+    private String contextName, classTied, funTied;
 
-    public DefaultUrlResult(Map<String, Object> params, String classTied, String funTied)
+    public DefaultUrlResult(Map<String, Object> params, String contextName, String classTied, String funTied)
     {
         this.params = params;
+        this.contextName = contextName;
         this.classTied = classTied;
         this.funTied = funTied;
+    }
+
+
+    @Override
+    public String contextName()
+    {
+        return contextName;
     }
 
     @Override

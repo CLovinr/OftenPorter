@@ -4,6 +4,7 @@ package cn.oftenporter.porter.core.base;
 import cn.oftenporter.porter.core.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import cn.oftenporter.porter.core.base.BackableSeek.SeekType;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -13,7 +14,7 @@ import java.util.*;
  * 对应于一个接口。
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
-public class WPort implements TypeParserNameStore
+public class WPort
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(WPort.class);
     private Object port;
@@ -27,16 +28,18 @@ public class WPort implements TypeParserNameStore
     private Class<? extends CheckPassable>[] checks;
     private TiedType tiedType;
     private List<Method> starts, destroys;
+    private boolean isMultiTiedType;
 
-    //类型转换varName:typeName
-    private Map<String, String> parsersVarAndType;
 
     private Map<String, WPort> children;
 
     private WPortInObj wPortInObj;
+    private ClassLoader classLoader;
 
-    public WPort()
+
+    public WPort(ClassLoader classLoader)
     {
+        this.classLoader = classLoader;
         starts = new ArrayList<>(1);
         destroys = new ArrayList<>(1);
     }
@@ -46,51 +49,64 @@ public class WPort implements TypeParserNameStore
      * 扫描函数。
      */
     private WPort childPort(Method method, Map<Class<?>, CheckPassable> checkPassableMap,
-            TypeParserStore typeParserStore, boolean enableDefaultValue)
+            PortInObjConf portInObjConf, boolean enableDefaultValue, BackableSeek backableSeek)
     {
         WPort port = null;
         try
         {
             method.setAccessible(true);
-            if (method.isAnnotationPresent(PortIn.class))
+            PortIn portIn = PortUtil.getAnnotation(method, PortIn.class);
+            if (portIn != null && (isMultiTiedType || tiedType != TiedType.REST || portIn.tiedType() == TiedType.REST))
             {
                 Class<?>[] parameters = method.getParameterTypes();
                 if (parameters.length > 1 || parameters.length == 1 && !WObject.class.equals(parameters[0]))
                 {
                     throw new IllegalArgumentException("the parameter list of " + method + " is illegal!");
                 }
-
-                PortIn portIn = method.getAnnotation(PortIn.class);
-                WPort _port = new WPort();
+                WPort _port = new WPort(classLoader);
                 _port.argCount = parameters.length;
                 _port.tiedType = portIn.tiedType();
                 _port.tiedName = PortUtil.tied(portIn, method,
                         TiedType.type(getTiedType(), _port.getTiedType()) == TiedType.REST || enableDefaultValue);
-                _port.inNames = new InNames(portIn.nece(), portIn.unnece(), portIn.inner());
+                _port.inNames = InNames.fromStringArray(portIn.nece(), portIn.unnece(), portIn.inner());
                 _port.checks = portIn.checks();
                 _port.method = PortUtil.method(getMethod(), portIn.method());
 
                 _port.port = method;
-                _port.parsersVarAndType = new HashMap<>();
                 PortUtil.addCheckPassable(checkPassableMap, portIn.checks());
 
+                boolean hasBinded = false;
                 //类型转换处理
-                if (method.isAnnotationPresent(Parser.class))
-                {
-                    Parser parser = method.getAnnotation(Parser.class);
-                    PortUtil.addTypeParser(_port.parsersVarAndType, parser, typeParserStore);
+                Parser parser = PortUtil.getAnnotation(method, Parser.class);
+                if (parser != null)
+                {//多个
+
+                    //添加；而且对于类型转换绑定为空的，在类上进行查找和绑定。
+                    PortUtil.bindTypeParsers(_port.inNames, parser, portInObjConf.getTypeParserStore(), backableSeek,
+                            SeekType.Add_Bind);
+                    hasBinded = true;
                 }
-                if (method.isAnnotationPresent(Parser.parse.class))
+                Parser.parse parse = PortUtil.getAnnotation(method, Parser.parse.class);
+                if (parse != null)
+                {//单个
+                    //添加；而且对于类型转换绑定为空的，在类上进行查找和绑定。
+                    PortUtil.bindTypeParser(_port.inNames, parse, portInObjConf.getTypeParserStore(), backableSeek,
+                            SeekType.Add_Bind);
+                    hasBinded = true;
+                }
+                if (!hasBinded)
                 {
-                    Parser.parse parse = method.getAnnotation(Parser.parse.class);
-                    PortUtil.addTypeParser(_port.parsersVarAndType, parse, typeParserStore);
+                    //当函数上没有转换注解、而类上有时，加上此句是确保类上的转换对函数有想
+                    PortUtil.bindTypeParser(_port.inNames, null, portInObjConf.getTypeParserStore(), backableSeek,
+                            SeekType.NotAdd_Bind);
                 }
 
-                _port.wPortInObj = PortUtil.dealPortInObj(method, _port.parsersVarAndType, typeParserStore);
-
-                if (method.isAnnotationPresent(PortOut.class))
+                _port.wPortInObj = PortUtil
+                        .dealPortInObj(method, portInObjConf, backableSeek,
+                                SeekType.NotAdd_Bind);
+                PortOut portOut = PortUtil.getAnnotation(method, PortOut.class);
+                if (portOut != null)
                 {
-                    PortOut portOut = method.getAnnotation(PortOut.class);
                     _port.outType = portOut.value();
                 } else
                 {
@@ -113,33 +129,51 @@ public class WPort implements TypeParserNameStore
      * @param port             接口对象。
      * @param checkPassableMap 用于存放检测接口的map。
      */
-    public void initStatic(Object port, Map<Class<?>, CheckPassable> checkPassableMap, TypeParserStore typeParserStore,
+    public void initStatic(Object port, Map<Class<?>, CheckPassable> checkPassableMap,
+            PortInObjConf portInObjConf,
             boolean enableDefaultValue)
     {
         this.port = port;
         Class<?> clazz = port.getClass();
         PortIn in = clazz.getAnnotation(PortIn.class);
         this.tiedName = PortUtil.tied(in, clazz, enableDefaultValue);
-        this.inNames = new InNames(in.nece(), in.unnece(), in.inner());
+        this.inNames = InNames.fromStringArray(in.nece(), in.unnece(), in.inner());
         this.method = in.method();
         this.checks = in.checks();
         this.tiedType = in.tiedType();
+        this.isMultiTiedType = in.multiTiedType();
         children = new HashMap<>();
 
         LOGGER.debug("tiedName={},tiedType={},method={}", this.tiedName, this.tiedType, this.method);
 
-        this.parsersVarAndType = new HashMap<>();
         PortUtil.addCheckPassable(checkPassableMap, in.checks());
+
+
+        BackableSeek backableSeek = new BackableSeek();
+        backableSeek.push();
         if (clazz.isAnnotationPresent(Parser.class))
         {
             Parser parser = clazz.getAnnotation(Parser.class);
-            PortUtil.addTypeParser(this.parsersVarAndType, parser, typeParserStore);
+            PortUtil.bindTypeParsers(this.inNames, parser, portInObjConf.getTypeParserStore(), backableSeek,
+                    SeekType.Add_NotBind);
         }
 
         if (clazz.isAnnotationPresent(Parser.parse.class))
         {
             Parser.parse parse = clazz.getAnnotation(Parser.parse.class);
-            PortUtil.addTypeParser(this.parsersVarAndType, parse, typeParserStore);
+            PortUtil.bindTypeParser(this.inNames, parse, portInObjConf.getTypeParserStore(), backableSeek,
+                    SeekType.Add_NotBind);
+        }
+
+
+        try
+        {
+            wPortInObj = PortUtil
+                    .dealPortInObj(clazz, portInObjConf, backableSeek,
+                            SeekType.NotAdd_Bind);
+        } catch (Exception e)
+        {
+            LOGGER.error(e.getMessage(), e);
         }
 
         Method[] methods = clazz.getMethods();
@@ -149,8 +183,13 @@ public class WPort implements TypeParserNameStore
             {
                 continue;
             }
-            mayAddStartOrDestroy(method);
-            WPort child = childPort(method, checkPassableMap, typeParserStore, enableDefaultValue);
+            if (mayAddStartOrDestroy(method))
+            {
+                continue;
+            }
+            backableSeek.push();
+            WPort child = childPort(method, checkPassableMap, portInObjConf, enableDefaultValue, backableSeek);
+            backableSeek.pop();
             if (child != null)
             {
                 TiedType tiedType = TiedType.type(getTiedType(), child.getTiedType());
@@ -160,11 +199,11 @@ public class WPort implements TypeParserNameStore
 
                     case REST:
                         children.put(child.getMethod().name(), child);
-                        LOGGER.debug("add-rest:{} (method={})", child.method, method.getName());
+                        LOGGER.debug("add-rest:{} (function={})", child.method, method.getName());
                         break;
                     case Default:
                         children.put(child.getTiedName(), child);
-                        LOGGER.debug("add:{},{} (method={})", child.tiedName, child.method, method.getName());
+                        LOGGER.debug("add:{},{} (function={})", child.tiedName, child.method, method.getName());
                         break;
                 }
 
@@ -173,17 +212,22 @@ public class WPort implements TypeParserNameStore
         initOk();
     }
 
-    private void mayAddStartOrDestroy(Method method)
+    private boolean mayAddStartOrDestroy(Method method)
     {
-        if (method.isAnnotationPresent(PortStart.class))
+        if (PortUtil.getAnnotation(method, PortStart.class) != null)
         {
+            method.setAccessible(true);
             starts.add(method);
+            return true;
         }
 
-        if (method.isAnnotationPresent(PortDestroy.class))
+        if (PortUtil.getAnnotation(method, PortDestroy.class) != null)
         {
+            method.setAccessible(true);
             destroys.add(method);
+            return true;
         }
+        return false;
     }
 
     /**
@@ -243,12 +287,18 @@ public class WPort implements TypeParserNameStore
     {
         WPort wport = null;
 
-        switch (getTiedType())
+        switch (tiedType)
         {
 
             case REST:
-                wport = children.get(result.funTied());
-                if (wport == null)
+                if (isMultiTiedType)
+                {
+                    wport = children.get(result.funTied());
+                    if (wport == null)
+                    {
+                        wport = children.get(method.name());
+                    }
+                } else
                 {
                     wport = children.get(method.name());
                 }
@@ -257,7 +307,10 @@ public class WPort implements TypeParserNameStore
                 wport = children.get(result.funTied());
                 break;
         }
-
+        if (wport != null && wport.method != method)
+        {
+            wport = null;
+        }
         return wport;
     }
 
@@ -309,15 +362,8 @@ public class WPort implements TypeParserNameStore
 
     private void initOk()
     {
-        if (parsersVarAndType.size() == 0)
-        {
-            parsersVarAndType = new HashMap<>(0);
-        }
+
     }
 
-    @Override
-    public String typeName(String varName)
-    {
-        return parsersVarAndType.get(varName);
-    }
+
 }

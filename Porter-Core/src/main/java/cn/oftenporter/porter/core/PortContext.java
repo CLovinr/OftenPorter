@@ -5,19 +5,17 @@ import cn.oftenporter.porter.core.annotation.AutoSet;
 import cn.oftenporter.porter.core.annotation.NotNull;
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.base.*;
+import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.util.PackageUtil;
+import cn.oftenporter.porter.core.util.WPTool;
 import com.alibaba.fastjson.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by https://github.com/CLovinr on 2016/7/23.
@@ -31,8 +29,24 @@ public class PortContext
     private Map<String, WPort> portMap;
     //检测
     private Map<Class<?>, CheckPassable> checks;
-    private TypeParserStore typeParserStore;
     private boolean enableDefaultValue;
+
+    private static class Temp
+    {
+        Map<String, Object> contextOneInstanceMap = new HashMap<>();
+        Map<String, Object> globalOneInstanceMap;
+        PorterBridge bridge;
+        PortInObjConf portInObjConf;
+
+        public Temp(Map<String, Object> contextAutoSetMap, Map<String, Object> globalOneInstanceMap,
+                PorterBridge bridge, PortInObjConf portInObjConf)
+        {
+            this.contextOneInstanceMap = contextAutoSetMap;
+            this.globalOneInstanceMap = globalOneInstanceMap;
+            this.bridge = bridge;
+            this.portInObjConf = portInObjConf;
+        }
+    }
 
     public PortContext()
     {
@@ -58,43 +72,75 @@ public class PortContext
         return this;
     }
 
-    public PortContext initSeek(PorterConf porterConf)
+    public PortContext initSeek(PorterConf porterConf,TypeParserStore globalParserStore, Map<String, Object> globalOneInstanceMap, PorterBridge bridge)
     {
 
-        TypeParserStore typeParserStore = porterConf.getTypeParserStore();
-        if (typeParserStore == null)
+        if (globalParserStore == null)
         {
             throw new NullPointerException();
         }
-        this.typeParserStore = typeParserStore;
-        this.enableDefaultValue = porterConf.isEnablePortInTiedNameDefault();
-        seek(porterConf.getSeekPackages(), porterConf.getGlobalAutoSetMap());
+
+        this.enableDefaultValue = porterConf.isEnableTiedNameDefault();
+
+        Temp temp = new Temp(porterConf.getContextAutoSetMap(), globalOneInstanceMap, bridge,
+                new PortInObjConf(globalParserStore, classLoader, porterConf.getContextAutoGenImplMap(),
+                        porterConf.isEnableTiedNameDefault()));
+        seek(porterConf.getSeekPackages().getPackages(), temp);
+
+        Set<Class<?>> forSeek = porterConf.getSeekPackages().getClassesForSeek();
+        for (Class<?> clazz : forSeek)
+        {
+            LOGGER.debug("may add porter:{}", clazz);
+            try
+            {
+                mayAddPorter(clazz, temp);
+            } catch (Exception e)
+            {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
+        Set<Object> objectSet = porterConf.getSeekPackages().getObjectsForSeek();
+        for (Object object : objectSet)
+        {
+            LOGGER.debug("may add porter:{}:{}", object.getClass(), object);
+            try
+            {
+                if (object.getClass().isAnnotationPresent(PortIn.class))
+                {
+                    addPorter(object, temp);
+                }
+            } catch (Exception e)
+            {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+
         return this;
     }
 
-    private PortContext seek(@NotNull SeekPackages seekPackages, Map<String, Object> globalAutoSetMap)
-    {
-        return seek(seekPackages.getPackages(), globalAutoSetMap);
-    }
-
-    private PortContext seek(@NotNull JSONArray packages, Map<String, Object> globalAutoSetMap)
+    private void seek(@NotNull JSONArray packages, Temp temp)
     {
         if (classLoader != null)
         {
             Thread.currentThread().setContextClassLoader(classLoader);
         }
-        Map<Class<?>, Object> oneInstanceMap = new HashMap<>();
+
         for (int i = 0; i < packages.size(); i++)
         {
-            seekPackage(packages.getString(i), globalAutoSetMap, oneInstanceMap);
+            seekPackage(packages.getString(i), temp);
         }
-        return this;
     }
 
-    private void autoSetObject(Object object, Map<String, Object> globalAutoSetMap,
-            Map<Class<?>, Object> oneInstanceMap) throws Exception
+    /**
+     * 变量自动设置。
+     */
+    private void autoSetObject(Object object, Temp temp) throws Exception
     {
-        Field[] fields = object.getClass().getDeclaredFields();
+        Map<String, Object> contextOneInstanceMap = temp.contextOneInstanceMap;
+        Map<String, Object> globalOneInstanceMap = temp.globalOneInstanceMap;
+        PorterBridge bridge = temp.bridge;
+        Field[] fields = WPTool.getAllFields(object.getClass());
         for (int i = 0; i < fields.length; i++)
         {
             Field f = fields[i];
@@ -102,43 +148,93 @@ public class PortContext
             {
                 continue;
             }
-            AutoSet autoSet = f.getAnnotation(AutoSet.class);
             f.setAccessible(true);
-            String keyName = autoSet.value();
-            Object value;
-            if ("".equals(keyName))
+            if (isDefaultAutoSetObject(f, object, bridge, temp.portInObjConf))
             {
-                Class<?> type = f.getType();
+                continue;
+            }
+            AutoSet autoSet = f.getAnnotation(AutoSet.class);
 
-                if (autoSet.oneInstance())
-                {
-                    if (oneInstanceMap.containsKey(type))
-                    {
-                        value = oneInstanceMap.get(type);
-                    } else
-                    {
-                        value = PortUtil.newObject(f.getType());
-                        oneInstanceMap.put(type, value);
-                    }
-                } else
-                {
-                    value = PortUtil.newObject(f.getType());
-                }
+            String keyName;
+            Class<?> mayNew = null;
+            Class<?> classClass = autoSet.classValue();
+            if (classClass.equals(AutoSet.class))
+            {
+                keyName = autoSet.value();
             } else
             {
-                value = globalAutoSetMap.get(keyName);
-                if (value == null)
-                {
-                    throw new RuntimeException("globalAutoSet Object for '" + keyName + " is null!");
-                }
+                keyName = classClass.getName();
+                mayNew = classClass;
+            }
+            if ("".equals(keyName))
+            {
+                keyName = f.getType().getName();
+            }
+            if (mayNew == null)
+            {
+                mayNew = f.getType();
+            }
+            Object value = null;
 
+            try
+            {
+                switch (autoSet.range())
+                {
+                    case Global:
+                    {
+                        value = globalOneInstanceMap.get(keyName);
+                        if (value == null)
+                        {
+                            value = WPTool.newObject(mayNew);
+                            globalOneInstanceMap.put(keyName, value);
+                        }
+                    }
+                    break;
+                    case Context:
+                    {
+                        value = contextOneInstanceMap.get(keyName);
+                        if (value == null)
+                        {
+                            value = WPTool.newObject(mayNew);
+                            contextOneInstanceMap.put(keyName, value);
+                        }
+                    }
+                    break;
+                    case New:
+                    {
+                        value = WPTool.newObject(mayNew);
+                    }
+                    break;
+                }
+            } catch (Exception e)
+            {
+                LOGGER.error("AutoSet failed for [{}]({}),ex={}", f, autoSet.range(), e.getMessage());
+            }
+            if (value == null)
+            {
+                continue;
             }
             f.set(object, value);
         }
     }
 
-    private void seekPackage(String packageStr, Map<String, Object> globalAutoSetMap,
-            Map<Class<?>, Object> oneInstanceMap)
+    /**
+     * 是否是默认工具类。
+     */
+    private boolean isDefaultAutoSetObject(Field f, Object object, PorterBridge bridge,
+            PortInObjConf portInObjConf) throws IllegalAccessException
+    {
+        if (!f.getType().getName().equals(TypeTo.class.getName()))
+        {
+            return false;
+        }
+
+        TypeTo typeTo = new TypeTo(bridge.paramDealt(), portInObjConf);
+        f.set(object, typeTo);
+        return true;
+    }
+
+    private void seekPackage(String packageStr, Temp temp)
     {
         LOGGER.debug("扫描包：{}", packageStr);
         List<String> classeses = PackageUtil.getClassName(packageStr);
@@ -147,16 +243,7 @@ public class PortContext
             try
             {
                 Class<?> clazz = PackageUtil.newClass(classeses.get(i), classLoader);
-                if ((!Modifier.isAbstract(clazz.getModifiers())) && clazz.isAnnotationPresent(PortIn.class))
-                {
-                    LOGGER.debug("添加接口：");
-                    LOGGER.debug("at " + clazz.getName() + ".<init>(" + clazz.getSimpleName() + ".java:1)");
-                    Constructor<?> constructor = clazz.getDeclaredConstructor();
-                    constructor.setAccessible(true);
-                    Object porter = constructor.newInstance();
-                    autoSetObject(porter, globalAutoSetMap, oneInstanceMap);
-                    addPorter(porter);
-                }
+                mayAddPorter(clazz, temp);
             } catch (Exception e)
             {
                 LOGGER.error(e.getMessage(), e);
@@ -164,10 +251,30 @@ public class PortContext
         }
     }
 
-    private void addPorter(Object porter)
+    private void mayAddPorter(Class<?> clazz, Temp temp) throws Exception
     {
-        WPort port = new WPort();
-        port.initStatic(porter, checks, typeParserStore, enableDefaultValue);
+        if ((!Modifier.isAbstract(clazz.getModifiers())) && clazz.isAnnotationPresent(PortIn.class))
+        {
+            Object porter = WPTool.newObject(clazz);
+            addPorter(porter, temp);
+        }
+    }
+
+
+    private void addPorter(Object porter, Temp temp) throws Exception
+    {
+        Class<?> clazz = porter.getClass();
+        LOGGER.debug("添加接口：");
+        LOGGER.debug("at " + clazz.getName() + ".<init>(" + clazz.getSimpleName() + ".java:1)");
+        autoSetObject(porter, temp);
+
+        WPort port = new WPort(classLoader);
+        port.initStatic(porter, checks, temp.portInObjConf, enableDefaultValue);
+        if (portMap.containsKey(port.getTiedName()))
+        {
+            LOGGER.warn("the class tiedName '{}' added before.(current:{},last:{})", port.getTiedName(),
+                    port.getPortObject(), portMap.get(port.getTiedName()).getPortObject());
+        }
         portMap.put(port.getTiedName(), port);
     }
 
@@ -176,10 +283,10 @@ public class PortContext
         return portMap.get(classTied);
     }
 
-    TypeParserStore getTypeParserStore()
-    {
-        return typeParserStore;
-    }
+//    TypeParserStore getTypeParserStore()
+//    {
+//        return typeParserStore;
+//    }
 
     public void start()
     {

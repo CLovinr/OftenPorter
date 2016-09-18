@@ -3,6 +3,7 @@ package cn.oftenporter.porter.core.base;
 import com.alibaba.fastjson.JSONObject;
 
 /**
+ * 用于处理参数。
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
 public interface ParamDealt
@@ -27,7 +28,7 @@ public interface ParamDealt
      * @param typeParserStore 类型转换store
      * @return 转换成功返回null，否则返回对应的错误原因。
      */
-    FailedReason deal(String[] names, Object[] values, boolean isNecessary, ParamSource paramSource,
+    FailedReason deal(InNames.Name[] names, Object[] values, boolean isNecessary, ParamSource paramSource,
             TypeParserStore typeParserStore);
 
 

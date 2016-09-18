@@ -1,7 +1,7 @@
 package cn.oftenporter.porter.simple.parsers;
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSONException;
 /**
  * 把json数组格式的字符串转换为{@linkplain JSONArray}
  */
-public class JSONArrayParser implements TypeParser
+public class JSONArrayParser extends TypeParser
 {
     @Override
     public ParseResult parse(@NotNull String name, @NotNull Object value)
@@ -29,7 +29,7 @@ public class JSONArrayParser implements TypeParser
             result = new ParseResult(v);
         } catch (JSONException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

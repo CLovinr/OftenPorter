@@ -2,12 +2,11 @@ package cn.oftenporter.porter.simple.parsers;
 
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
 
 /**
  *
  */
-class _IntXParser implements TypeParser
+class _IntXParser extends TypeParser
 {
     private int radix;
 
@@ -35,7 +34,7 @@ class _IntXParser implements TypeParser
             result = new ParseResult(v);
         } catch (NumberFormatException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

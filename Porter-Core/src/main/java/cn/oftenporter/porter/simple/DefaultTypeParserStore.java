@@ -1,33 +1,38 @@
 package cn.oftenporter.porter.simple;
 
-import cn.oftenporter.porter.core.base.TypeParser;
+import cn.oftenporter.porter.core.base.ITypeParser;
 import cn.oftenporter.porter.core.base.TypeParserStore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/4.
  */
 public class DefaultTypeParserStore implements TypeParserStore
 {
-    private Map<String, TypeParser> map = new HashMap<>();
+    private Map<String, ITypeParser> map = new ConcurrentHashMap<>();
 
     @Override
-    public TypeParser byName(String name)
+    public ITypeParser byId(String id)
     {
-        return map.get(name);
+        if (id == null)
+        {
+            return null;
+        }
+        return map.get(id);
     }
 
     @Override
-    public void put(String name, TypeParser typeParser)
+    public void put(String id, ITypeParser typeParser)
     {
-        map.put(name, typeParser);
+        map.put(id, typeParser);
     }
 
     @Override
-    public boolean contains(String name)
+    public boolean contains(String id)
     {
-        return map.containsKey(name);
+        return map.containsKey(id);
     }
 }

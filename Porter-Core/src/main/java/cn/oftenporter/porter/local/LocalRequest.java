@@ -1,5 +1,6 @@
 package cn.oftenporter.porter.local;
 
+import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.WRequest;
 import cn.oftenporter.porter.core.util.EnumerationImpl;
 
@@ -35,5 +36,11 @@ class LocalRequest implements WRequest
     public String getPath()
     {
         return request.getRequestPath();
+    }
+
+    @Override
+    public PortMethod getMethod()
+    {
+        return request.getMethod();
     }
 }

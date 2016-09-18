@@ -2,12 +2,11 @@ package cn.oftenporter.porter.simple.parsers;
 
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
 
 /**
  * boolean类型
  */
-public class BooleanParser implements TypeParser
+public class BooleanParser extends TypeParser
 {
     @Override
     public ParseResult parse(@NotNull String name, @NotNull Object value)
@@ -26,7 +25,7 @@ public class BooleanParser implements TypeParser
             result = new ParseResult(v);
         } catch (NumberFormatException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

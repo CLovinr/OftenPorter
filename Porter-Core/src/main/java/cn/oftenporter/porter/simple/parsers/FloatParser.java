@@ -2,11 +2,11 @@ package cn.oftenporter.porter.simple.parsers;
 
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
+
 
 /**
  */
-public class FloatParser implements TypeParser
+public class FloatParser extends TypeParser
 {
 
 
@@ -28,7 +28,7 @@ public class FloatParser implements TypeParser
             result = new ParseResult(v);
         } catch (NumberFormatException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

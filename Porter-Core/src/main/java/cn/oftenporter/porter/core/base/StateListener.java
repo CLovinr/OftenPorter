@@ -2,13 +2,17 @@ package cn.oftenporter.porter.core.base;
 
 import cn.oftenporter.porter.core.ParamSourceHandleManager;
 import cn.oftenporter.porter.core.init.InitParamSource;
+import cn.oftenporter.porter.core.init.PorterConf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
+ * 状态监听接口。
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
 public interface StateListener
 {
-    void beforeSeek(InitParamSource initParamSource, ParamSourceHandleManager paramSourceHandleManager);
+    void beforeSeek(InitParamSource initParamSource,PorterConf porterConf, ParamSourceHandleManager paramSourceHandleManager);
 
     void afterSeek(InitParamSource initParamSource, ParamSourceHandleManager paramSourceHandleManager);
 
@@ -21,34 +25,36 @@ public interface StateListener
     public class Adapter implements StateListener
     {
 
-        @Override
-        public void beforeSeek(InitParamSource initParamSource, ParamSourceHandleManager paramSourceHandleManager)
-        {
+        private static final Logger LOGGER = LoggerFactory.getLogger(Adapter.class);
 
+        @Override
+        public void beforeSeek(InitParamSource initParamSource,PorterConf porterConf, ParamSourceHandleManager paramSourceHandleManager)
+        {
+            LOGGER.debug("beforeSeek");
         }
 
         @Override
         public void afterSeek(InitParamSource initParamSource, ParamSourceHandleManager paramSourceHandleManager)
         {
-
+            LOGGER.debug("afterSeek");
         }
 
         @Override
         public void afterStart(InitParamSource initParamSource)
         {
-
+            LOGGER.debug("afterStart");
         }
 
         @Override
         public void beforeDestroy()
         {
-
+            LOGGER.debug("beforeDestroy");
         }
 
         @Override
         public void afterDestroy()
         {
-
+            LOGGER.debug("afterDestroy");
         }
     }
 }

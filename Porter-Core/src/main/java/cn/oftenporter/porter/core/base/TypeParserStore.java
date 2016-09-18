@@ -5,9 +5,9 @@ package cn.oftenporter.porter.core.base;
  */
 public interface TypeParserStore
 {
-    TypeParser byName(String name);
+    ITypeParser byId(String id);
 
-    void put(String name, TypeParser typeParser);
+    void put(String id, ITypeParser typeParser);
 
-    boolean contains(String name);
+    boolean contains(String id);
 }

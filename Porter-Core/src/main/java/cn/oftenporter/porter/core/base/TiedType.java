@@ -1,6 +1,7 @@
 package cn.oftenporter.porter.core.base;
 
 /**
+ * 接口绑定类型。
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
 public enum TiedType

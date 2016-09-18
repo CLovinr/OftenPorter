@@ -3,6 +3,7 @@ package cn.oftenporter.porter.core.base;
 import java.util.Enumeration;
 
 /**
+ * 对应于请求。
  * Created by https://github.com/CLovinr on 2016/7/24.
  */
 public interface WRequest
@@ -20,5 +21,7 @@ public interface WRequest
     Enumeration<String> getParameterNames();
 
     String getPath();
+
+    PortMethod getMethod();
 
 }

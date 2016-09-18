@@ -1,7 +1,6 @@
 package cn.oftenporter.porter.core.annotation;
 
 
-
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.TiedType;
@@ -9,7 +8,7 @@ import cn.oftenporter.porter.core.base.TiedType;
 import java.lang.annotation.*;
 
 /**
- * 用于标记输入接口。绑定名之间是以斜杠"/"隔开的。
+ * 用于标记输入接口。若标记在函数上，要求函数必须是public的;若标记在类上，则访问类型可以是任意类型。
  * <br>
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
@@ -54,7 +53,7 @@ public @interface PortIn
     PortMethod method() default PortMethod.DEFAULT;
 
     /**
-     * 设置检测类型。会依此进行检测，有一个不通过则表示访问不通过。
+     * 设置检测类型。会依此进行检测，有一个不通过则表示访问不通过。对应的类必须有无参构造函数。
      */
     Class<? extends CheckPassable>[] checks() default {};
 
@@ -65,4 +64,12 @@ public @interface PortIn
      * </pre>
      */
     TiedType tiedType() default TiedType.Default;
+
+    /**
+     * 是否支持多个接口类型,对类有效,默认为true。
+     * 若为false，则当类的{@linkplain PortIn#tiedType()}为{@linkplain TiedType#REST}时，则非{@linkplain TiedType#REST}接口函数都将无效
+     *
+     * @return
+     */
+    boolean multiTiedType() default true;
 }

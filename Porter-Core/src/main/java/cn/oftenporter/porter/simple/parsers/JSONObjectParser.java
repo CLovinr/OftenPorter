@@ -1,7 +1,7 @@
 package cn.oftenporter.porter.simple.parsers;
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.base.TypeParser;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * 把json格式的字符串转换为{@linkplain JSONObject}
  */
-public class JSONObjectParser implements TypeParser
+public class JSONObjectParser extends TypeParser
 {
 
     @Override
@@ -30,7 +30,7 @@ public class JSONObjectParser implements TypeParser
             result = new ParseResult(v);
         } catch (JSONException e)
         {
-            result = ParseResult.ILLEGAL;
+            result = ParserUtil.failed(this,e.getMessage());;
         }
         return result;
     }

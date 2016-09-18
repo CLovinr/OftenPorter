@@ -13,6 +13,7 @@ import java.util.Map;
  * <pre>
  *     首先调用{@linkplain #fromName(String)},
  *     若未找到则调用{@linkplain #fromMethod(PortMethod)},若还未找到则使用默认的。
+ *     非线程安全。
  * </pre>
  * Created by https://github.com/CLovinr on 2016/7/23.
  */

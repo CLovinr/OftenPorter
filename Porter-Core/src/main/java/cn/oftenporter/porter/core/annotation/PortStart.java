@@ -3,7 +3,7 @@ package cn.oftenporter.porter.core.annotation;
 import java.lang.annotation.*;
 
 /**
- * Created by 宇宙之灵 on 2016/8/31.
+ * 用于标记函数，启动时调用。
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})

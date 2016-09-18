@@ -27,12 +27,6 @@ public class WPortInObj
             this.unneceObjFields = unneceObjFields;
         }
 
-        private boolean isObject = true;
-
-        public boolean isObject()
-        {
-            return isObject;
-        }
     }
 
     public final One[] ones;

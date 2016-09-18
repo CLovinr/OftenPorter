@@ -30,7 +30,7 @@ public class ArrayListArrParser extends JSONArrayParser
             }
         } catch (JSONException e)
         {
-            result.setIsLegal(false);
+            result.setFailedDesc(e.getMessage());
         }
         return result;
     }

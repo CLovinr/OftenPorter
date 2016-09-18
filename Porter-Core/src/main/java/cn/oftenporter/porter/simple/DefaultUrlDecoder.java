@@ -45,16 +45,26 @@ public class DefaultUrlDecoder implements UrlDecoder
             return null;
         }
         int forwardSlash = tiedPath.indexOf('/', 1);
+        String contextName, classTied, funTied;
+
         if (forwardSlash == -1)
         {
             return null;
-        }
-
-        String classTied = tiedPath.substring(1, forwardSlash);
-        String funTied = tiedPath.substring(forwardSlash + 1);
-        if (funTied.indexOf('/') != -1)
+        } else
         {
-            return null;
+            contextName = tiedPath.substring(1, forwardSlash);
+        }
+        tiedPath = tiedPath.substring(forwardSlash);
+
+        forwardSlash = tiedPath.indexOf('/', 1);
+        if (forwardSlash == -1)
+        {
+            classTied = tiedPath.substring(1);
+            funTied = "";
+        } else
+        {
+            classTied = tiedPath.substring(1, forwardSlash);
+            funTied = tiedPath.substring(forwardSlash + 1);
         }
 
 
@@ -87,7 +97,7 @@ public class DefaultUrlDecoder implements UrlDecoder
         {
             params = new HashMap<>(0);
         }
-        DefaultUrlResult result = new DefaultUrlResult(params, classTied, funTied);
+        DefaultUrlResult result = new DefaultUrlResult(params, contextName, classTied, funTied);
         return result;
     }
 

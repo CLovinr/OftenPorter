@@ -7,20 +7,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * 类型转换。
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
-public interface TypeParser
+public interface ITypeParser
 {
 
     ParseResult parse(@NotNull String name, @NotNull Object value);
 
+    /**
+     * 每一个TypeParser都会被放到一个全局的Store中，此id就是唯一对应的键值。
+     *
+     * @return 全局唯一的id。
+     */
+    String id();
+
     public class ParseResult
     {
 
-        public static final ParseResult ILLEGAL = new ParseResult();
 
         private boolean isLegal;
         private Object value;
+        private String failedDesc;
 
         /**
          * 转换不合法
@@ -39,6 +47,25 @@ public interface TypeParser
         {
             setValue(value);
             this.isLegal = true;
+        }
+
+
+        public static ParseResult failed(String failedDesc)
+        {
+            ParseResult parseResult = new ParseResult();
+            parseResult.setFailedDesc(failedDesc);
+            return parseResult;
+        }
+
+        public void setFailedDesc(String failedDesc)
+        {
+            setIsLegal(false);
+            this.failedDesc = failedDesc;
+        }
+
+        public String getFailedDesc()
+        {
+            return failedDesc;
         }
 
         /**
@@ -60,7 +87,7 @@ public interface TypeParser
          *
          * @param isLegal
          */
-        public void setIsLegal(boolean isLegal)
+        private void setIsLegal(boolean isLegal)
         {
             this.isLegal = isLegal;
         }

@@ -1,9 +1,6 @@
 package cn.oftenporter.porter.simple;
 
-import cn.oftenporter.porter.core.base.ParamDealt;
-import cn.oftenporter.porter.core.base.ParamSource;
-import cn.oftenporter.porter.core.base.TypeParser;
-import cn.oftenporter.porter.core.base.TypeParserStore;
+import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.util.WPTool;
 
 import java.util.Map;
@@ -15,12 +12,13 @@ import java.util.Map;
 public class DefaultParamDealt implements ParamDealt
 {
     @Override
-    public FailedReason deal(String[] names, Object[] values, boolean isNecessary, ParamSource paramSource,
+    public FailedReason deal(InNames.Name[] names, Object[] values, boolean isNecessary, ParamSource paramSource,
             TypeParserStore typeParserStore)
     {
         for (int i = 0; i < names.length; i++)
         {
-            Object value = getParam(names[i], paramSource, typeParserStore.byName(names[i]));
+            InNames.Name name = names[i];
+            Object value = getParam(name.varName, paramSource, typeParserStore.byId(name.typeParserId));
             if (value != null)
             {
                 if (value instanceof FailedReason)
@@ -32,26 +30,26 @@ public class DefaultParamDealt implements ParamDealt
                 }
             } else if (isNecessary)
             {
-                return DefaultFailedReason.lackNecessaryParams("Lack necessary params!", names[i]);
+                return DefaultFailedReason.lackNecessaryParams("Lack necessary params!", name.varName);
             }
         }
         return null;
     }
 
     public Object getParam(String name, ParamSource paramSource,
-            TypeParser typeParser)
+            ITypeParser typeParser)
     {
 
         Object v = paramSource.getParam(name);
         if (!WPTool.isEmpty(v) && typeParser != null)
         {
-            TypeParser.ParseResult parseResult = typeParser.parse(name, v);
+            ITypeParser.ParseResult parseResult = typeParser.parse(name, v);
             if (parseResult.isLegal())
             {
                 Object obj = parseResult.getValue();
-                if (obj instanceof TypeParser.DecodeParams)
+                if (obj instanceof ITypeParser.DecodeParams)
                 {
-                    TypeParser.DecodeParams decodeParams = (TypeParser.DecodeParams) obj;
+                    ITypeParser.DecodeParams decodeParams = (ITypeParser.DecodeParams) obj;
                     Map<String, Object> map = decodeParams.getParams();
                     paramSource.putNewParams(map);
                     v = map.get(name);
@@ -61,7 +59,7 @@ public class DefaultParamDealt implements ParamDealt
                 }
             } else
             {
-                return DefaultFailedReason.illegalParams("Illegal param type!",name);
+                return DefaultFailedReason.illegalParams(parseResult.getFailedDesc(), name);
             }
         }
         if ("".equals(v))

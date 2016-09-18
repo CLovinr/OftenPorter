@@ -1,17 +1,25 @@
 package cn.oftenporter.porter.simple.parsers;
 
-import cn.oftenporter.porter.core.base.TypeParser;
+import cn.oftenporter.porter.core.base.ITypeParser;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/8.
  */
 public class ParserUtil
 {
+
+    static ITypeParser.ParseResult failed(ITypeParser typeParser, String failedDesc)
+    {
+        return ITypeParser.ParseResult.failed(typeParser.getClass().getSimpleName() + ":" + failedDesc);
+    }
+
     /**
      * 根据类型得到转换类。
      *
@@ -19,9 +27,9 @@ public class ParserUtil
      * @return 转类型
      * @throws ClassNotFoundException 未找到匹配的。
      */
-    public static Class<? extends TypeParser> getTypeParser(Class<?> type) throws ClassNotFoundException
+    public static Class<? extends ITypeParser> getTypeParser(Class<?> type) throws ClassNotFoundException
     {
-        Class<? extends TypeParser> clazz = null;
+        Class<? extends ITypeParser> clazz = null;
         if (type.isPrimitive())
         {
             if (type == Integer.TYPE)
@@ -63,9 +71,12 @@ public class ParserUtil
             } else if (type == JSONObject.class)
             {
                 clazz = JSONObjectParser.class;
-            } else if (type == String.class)
+            }  else if (type == String.class)
             {
                 clazz = StringParser.class;
+            } else if (type == Map.class)
+            {
+                clazz = JSON2MapParser.class;
             }
             //////////
             else if (type == Character.class)

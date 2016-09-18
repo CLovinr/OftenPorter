@@ -6,9 +6,13 @@ import com.alibaba.fastjson.JSONObject;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by https://github.com/CLovinr on 2016/7/23.
@@ -112,6 +116,28 @@ public class WPTool
     }
 
     /**
+     * 获取异常描述。
+     *
+     * @param throwable
+     * @return
+     */
+    public static String getMessage(Throwable throwable)
+    {
+        Throwable cause = throwable.getCause();
+        if (cause == null)
+        {
+            cause = throwable;
+        }
+        String msg = cause.getMessage();
+        if (msg == null)
+        {
+            msg = cause.toString();
+        }
+        StackTraceElement element = cause.getStackTrace()[0];
+        return msg+" "+LogUtil.toString(element);
+    }
+
+    /**
      * 若不为null则调用关闭closeable.close().
      *
      * @param closeable
@@ -186,86 +212,37 @@ public class WPTool
         return index;
     }
 
-//
-//    /**
-//     * 支持基本数据类型，json，String类型.
-//     *
-//     * @param values 字符串的值
-//     * @param types  类型，与values对应
-//     * @return
-//     * @throws SecurityException
-//     * @throws NoSuchMethodException
-//     * @throws ParseException
-//     */
-//    public static Object[] xparse(String[] values, Class<?>[] types) throws NoSuchMethodException, SecurityException,
-//            ParseException
-//    {
-//        Object[] objects = new Object[values.length];
-//        for (int i = 0; i < objects.length; i++)
-//        {
-//            Constructor<?> constructor = types[i].getConstructor(String.class);
-//            try
-//            {
-//                Object object = constructor.newInstance(values[i]);
-//                objects[i] = object;
-//            } catch (Exception e)
-//            {
-//                ParseException parseException = new ParseException(types[i], values[i], e.getMessage());
-//                throw parseException;
-//            }
-//        }
-//        return objects;
-//    }
-//
-//    public static class ParseException extends Exception
-//    {
-//
-//        /**
-//         *
-//         */
-//        private static final long serialVersionUID = 1L;
-//
-//        private String value;
-//        private Class<?> type;
-//        private String info;
-//
-//        public ParseException(Class<?> type, String value, String info)
-//        {
-//            this.value = value;
-//            this.type = type;
-//            this.info = info;
-//        }
-//
-//        @Override
-//        public String toString()
-//        {
-//            String string = "can't parse '" + value
-//                    + "' to "
-//                    + getType().getName()
-//                    + " \n"
-//                    + info;
-//            return string;
-//        }
-//
-//        /**
-//         * 得到转换类型.
-//         *
-//         * @return
-//         */
-//        public Class<?> getType()
-//        {
-//            return type;
-//        }
-//
-//        /**
-//         * 得到参数值
-//         *
-//         * @return
-//         */
-//        public String getValue()
-//        {
-//            return value;
-//        }
-//
-//    }
+    /**
+     * 得到所有字段（任何访问类型，包括父类（除了Object））.
+     *
+     * @param clazz
+     * @return
+     */
+    public static Field[] getAllFields(Class<?> clazz)
+    {
+        List<Field> list = new ArrayList<>();
+        if (!Modifier.isInterface(clazz.getModifiers()))
+        {
+            getAllFields(clazz, list);
+        }
+        return list.toArray(new Field[0]);
+    }
+
+    private static void getAllFields(Class<?> clazz, List<Field> list)
+    {
+        if (clazz.equals(Object.class))
+        {
+            return;
+        }
+
+        Field[] fields = clazz.getDeclaredFields();
+        for (int i = 0; i < fields.length; i++)
+        {
+            list.add(fields[i]);
+        }
+
+        getAllFields(clazz.getSuperclass(), list);
+
+    }
+
 }

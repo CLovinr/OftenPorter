@@ -6,7 +6,7 @@ package cn.oftenporter.porter.core.base;
  */
 public interface CheckPassable
 {
-    public enum Type
+    public enum DuringType
     {
         /**
          * 没有初始化任何参数。
@@ -25,9 +25,9 @@ public interface CheckPassable
     /**
      * 返回null表示通过。
      *
-     * @param wObject
-     * @param type
-     * @return
+     * @param wObject 不同的检测时期，内部初始化情况不同，见{@linkplain DuringType}
+     * @param type    检测的时期
+     * @return 返回null表示通过，不为null（错误信息）表示无法通过。
      */
-    Object willPass(WObject wObject, Type type);
+    Object willPass(WObject wObject, DuringType type);
 }
