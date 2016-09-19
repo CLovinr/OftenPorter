@@ -64,7 +64,7 @@ public class PorterMain
             throw new RuntimeException("already init!");
         }
         isInit = true;
-        portExecutor = new PortExecutor(globalAutoSet, globalParserStore, urlDecoder, responseWhenException);
+        portExecutor = new PortExecutor(pInit, globalAutoSet, globalParserStore, urlDecoder, responseWhenException);
     }
 
 

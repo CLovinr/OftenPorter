@@ -25,7 +25,7 @@ public class DefaultPInit implements PInit
     private Map<String, PPath> pathMap;
     private static final Object LOCK = new Object();
     private PBridge toAll;
-    private PUrlDecoder pUrlDecoder;
+    private boolean isClosed = false;
 
     private static class Response extends PResponse
     {
@@ -45,10 +45,9 @@ public class DefaultPInit implements PInit
         this.current = bridge;
         pathMap = new ConcurrentHashMap<>();
         listenerMap = new ConcurrentHashMap<>();
-        pUrlDecoder = new DefaultPUrlDecoder();
 
         //自己可达自己
-        pathMap.put(pName.getName(), new PPath(0, pName, bridge, this));
+        pathMap.put(pName.getName(), new PPath(0, pName, this));
 
         linkListener = new LinkListener()
         {
@@ -62,7 +61,7 @@ public class DefaultPInit implements PInit
                         return;
                     }
                     PPath path = pathMap.get(pPath.pName.getName());
-                    if (path == null || path.step > pPath.step + 1)
+                    if (path == null || path.step >= pPath.step + 1)
                     {//保存路径更短者
                         PPath newPath = pPath.newPath(pPath.step + 1);
                         putPath(newPath);
@@ -84,16 +83,20 @@ public class DefaultPInit implements PInit
             {
 
                 String pname = request.getPName();
-                PPath path;
-                if (pname == null||(path=pathMap.get(pname))==null )
+                PPath path = null;
+                if (pname == null || (path = pathMap.get(pname)) == null || path.pInit.isClosed())
                 {
+                    if (path != null && path.pInit.isClosed())
+                    {
+                        pathMap.remove(pname);
+                    }
                     JResponse jResponse = new JResponse(ResultCode.NOT_AVAILABLE);
-                    jResponse.setDescription(request.getPath());
+                    jResponse.setDescription(":" + (pname == null ? "" : pname) + request.getPath());
                     PResponse response = new Response(jResponse);
                     callback.onResponse(response);
                 } else
                 {
-                    path.bridge.request(request.withNewPath(null, request.getPath()), callback);
+                    path.pInit.currentBridge().request(request.withNewPath(null, request.getPath()), callback);
                 }
 
             }
@@ -140,7 +143,7 @@ public class DefaultPInit implements PInit
             {
                 listenerMap.put(init.currentPName(), linkListener);
 
-                sendCurrentPath2Listener(linkListener);
+                sendCurrentPath2Listener(linkListener, true);
             }
         }
     }
@@ -155,17 +158,21 @@ public class DefaultPInit implements PInit
     }
 
     //发送目前可达的路径
-    private void sendCurrentPath2Listener(LinkListener listener)
+    private void sendCurrentPath2Listener(LinkListener listener, boolean sendMeMore)
     {
         synchronized (LOCK)
         {
             //自己可达自己，步数为0.
-            listener.onItCanGo(this, new PPath(0, currentPName(), currentBridge(), this));
-            Iterator<PPath> pathIterator = pathMap.values().iterator();
-            while (pathIterator.hasNext())
+            listener.onItCanGo(this, new PPath(0, currentPName(), this));
+            if (sendMeMore)
             {
-                listener.onItCanGo(this, pathIterator.next());
+                Iterator<PPath> pathIterator = pathMap.values().iterator();
+                while (pathIterator.hasNext())
+                {
+                    listener.onItCanGo(this, pathIterator.next());
+                }
             }
+
         }
     }
 
@@ -195,7 +202,9 @@ public class DefaultPInit implements PInit
         synchronized (LOCK)
         {
             boolean sendMyGoPath = false;
+            boolean sendMeMore = false;
             boolean addIt = false;
+            boolean addItMore = false;
             switch (direction)
             {
                 case Both:
@@ -214,27 +223,63 @@ public class DefaultPInit implements PInit
                     addIt = true;
                 }
                 break;
+                case BothAll:
+                {
+                    addIt = true;
+                    sendMyGoPath = true;
+                    addItMore = true;
+                    sendMeMore = true;
+                }
+                break;
+                case ToMeAll:
+                {
+                    sendMyGoPath = true;
+                    sendMeMore = true;
+                }
+                break;
+                case ToItAll:
+                {
+                    addIt = true;
+                    addItMore = true;
+                }
+                break;
             }
 
             if (addIt)
             {
-                PPath path = new PPath(1, it.currentPName(), it.currentBridge(), it);
+                PPath path = new PPath(1, it.currentPName(), it);
 
                 putPath(path);
 
                 //发送新添加的可达路径给所有监听者。
                 forAll().onItCanGo(this, path);
 
-                //用于接收对方可达的路径
-                it.receiveLink(this, linkListener);
+                if (addItMore)
+                {
+                    //用于接收对方可达的路径
+                    it.receiveLink(this, linkListener);
+                }
+
             }
 
             if (sendMyGoPath)
             {
                 LinkListener listener = it.sendLink();
-                sendCurrentPath2Listener(listener);
+                sendCurrentPath2Listener(listener, sendMeMore);
             }
         }
+    }
+
+    @Override
+    public void close()
+    {
+        isClosed = true;
+    }
+
+    @Override
+    public boolean isClosed()
+    {
+        return isClosed;
     }
 
     @Override

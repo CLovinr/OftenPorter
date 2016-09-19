@@ -3,6 +3,7 @@ package cn.oftenporter.porter.core;
 import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.Delivery;
 import cn.oftenporter.porter.core.util.WPTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,17 +29,19 @@ public class PortExecutor
         private boolean responseWhenException;
         Map<String, Object> globalAutoSetMap;
         Map<String, Object> contextRuntimeMap;
+        Delivery delivery;
         private ParamSourceHandleManager paramSourceHandleManager;
         public final StateListener stateListenerForAll;
 
         private boolean isEnable = true;
         private String name, contentEncoding;
 
-        public Context(PortContext portContext, CheckPassable[] contextChecks,
+        public Context(Delivery delivery, PortContext portContext, CheckPassable[] contextChecks,
                 ParamDealt paramDealt, boolean responseWhenException, Map<String, Object> globalAutoSetMap,
                 Map<String, Object> contextRuntimeMap, ParamSourceHandleManager paramSourceHandleManager,
                 StateListener stateListenerForAll)
         {
+            this.delivery = delivery;
             this.portContext = portContext;
             this.contextChecks = contextChecks;
             this.paramDealt = paramDealt;
@@ -90,13 +93,14 @@ public class PortExecutor
     private TypeParserStore globalParserStore;
     private CheckPassable[] allGlobalChecks;
     private UrlDecoder urlDecoder;
-
+    private Delivery delivery;
     private boolean responseWhenException;
 
-    public PortExecutor( Map<String, Object> globalAutoSetMap,
+    public PortExecutor(Delivery delivery, Map<String, Object> globalAutoSetMap,
             TypeParserStore globalParserStore, UrlDecoder urlDecoder,
             boolean responseWhenException)
     {
+        this.delivery = delivery;
         this.globalAutoSetMap = globalAutoSetMap;
         this.globalParserStore = globalParserStore;
         this.urlDecoder = urlDecoder;
@@ -111,7 +115,8 @@ public class PortExecutor
     public void addContext(PorterBridge bridge, PortContext portContext, StateListener stateListenerForAll)
     {
         PorterConf porterConf = bridge.porterConf();
-        Context context = new Context(portContext, porterConf.getContextChecks().toArray(new CheckPassable[0]),
+        Context context = new Context(delivery, portContext,
+                porterConf.getContextChecks().toArray(new CheckPassable[0]),
                 bridge.paramDealt(), porterConf.isResponseWhenException(), globalAutoSetMap,
                 porterConf.getContextRuntimeMap(),
                 bridge.paramSourceHandleManager(), stateListenerForAll);
@@ -202,7 +207,7 @@ public class PortExecutor
         Context context = req.context;
         UrlDecoder.Result result = req.result;
 
-        WObjectImpl wObject = new WObjectImpl(request, response, context);
+        WObjectImpl wObject = new WObjectImpl(result, request, response, context);
 
         WPort classPort = context.portContext.getClassPort(result.classTied());
 
@@ -470,7 +475,7 @@ public class PortExecutor
                 response.write(jResponse);
             } catch (IOException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         close(response);
@@ -485,7 +490,7 @@ public class PortExecutor
                 wObject.getResponse().write(object);
             } catch (IOException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         close(wObject);
@@ -502,7 +507,7 @@ public class PortExecutor
                 wObject.getResponse().write(jResponse);
             } catch (IOException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         close(wObject);
@@ -521,7 +526,7 @@ public class PortExecutor
                 wObject.getResponse().write(jResponse);
             } catch (IOException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         close(wObject);
@@ -538,7 +543,7 @@ public class PortExecutor
                 wObject.getResponse().write(jResponse);
             } catch (IOException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         close(wObject);
@@ -555,7 +560,7 @@ public class PortExecutor
                 response.write(jResponse);
             } catch (IOException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
         close(response);

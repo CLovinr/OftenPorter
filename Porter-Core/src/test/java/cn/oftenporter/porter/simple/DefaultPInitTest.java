@@ -38,7 +38,7 @@ public class DefaultPInitTest
         pInits[2].link(pInits[5], PInit.Direction.ToIt);
 
         pInits[5].link(pInits[4], PInit.Direction.ToIt);
-        // pInits[5].link(pInits[0], PInit.Direction.ToIt);//去掉注释后，彼此可达
+        pInits[5].link(pInits[0], PInit.Direction.ToIt);
         pInits[3].link(pInits[2], PInit.Direction.ToIt);
 
         for (int i = 0; i < pInits.length; i++)

@@ -1,8 +1,10 @@
 package cn.oftenporter.porter.core;
 
+import cn.oftenporter.porter.core.base.UrlDecoder;
 import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.base.WRequest;
 import cn.oftenporter.porter.core.base.WResponse;
+import cn.oftenporter.porter.core.pbridge.Delivery;
 
 
 /**
@@ -12,12 +14,14 @@ class WObjectImpl extends WObject
 {
     private WRequest request;
     private WResponse response;
+    private UrlDecoder.Result result;
     Object[] finObjs, cinObjs;
 
     private PortExecutor.Context context;
 
-    WObjectImpl(WRequest request, WResponse response, PortExecutor.Context context)
+    WObjectImpl(UrlDecoder.Result result, WRequest request, WResponse response, PortExecutor.Context context)
     {
+        this.result = result;
         this.request = request;
         this.response = response;
         this.context = context;
@@ -63,5 +67,17 @@ class WObjectImpl extends WObject
     public Object gsavedObject(String key)
     {
         return context.globalAutoSetMap.get(key);
+    }
+
+    @Override
+    public Delivery delivery()
+    {
+        return context.delivery;
+    }
+
+    @Override
+    public UrlDecoder.Result url()
+    {
+        return result;
     }
 }

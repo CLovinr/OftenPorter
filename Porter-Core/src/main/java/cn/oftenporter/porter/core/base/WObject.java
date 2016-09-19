@@ -2,6 +2,7 @@ package cn.oftenporter.porter.core.base;
 
 import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.Delivery;
 
 /**
  * 接口中间对象。
@@ -105,5 +106,9 @@ public abstract class WObject
      * 见{@linkplain CommonMain#addGlobalAutoSet(String, Object)}
      */
     public abstract Object gsavedObject(String key);
+
+    public abstract Delivery delivery();
+
+    public abstract UrlDecoder.Result url();
 
 }

@@ -3,7 +3,7 @@ package cn.oftenporter.porter.core.pbridge;
 /**
  * @author Created by https://github.com/CLovinr on 2016/9/18.
  */
-public interface PInit
+public interface PInit extends Delivery
 {
     public enum Direction
     {
@@ -18,7 +18,19 @@ public interface PInit
         /**
          * 只是我访问被添加者。
          */
-        ToIt
+        ToIt,
+        /**
+         * 可以访问被添加者所访问的
+         */
+        ToItAll,
+        /**
+         * 可以访问我所访问的
+         */
+        ToMeAll,
+        /**
+         * 彼此可以访问彼此可访问的。
+         */
+        BothAll
     }
 
     public interface LinkListener
@@ -29,28 +41,10 @@ public interface PInit
          * @param pPath
          */
         void onItCanGo(PInit it, PPath pPath);
+
     }
 
-    /**
-     * 只可以访问当前实例的。
-     *
-     * @return
-     */
-    PBridge currentBridge();
 
-    /**
-     * 当前实例名称。
-     *
-     * @return
-     */
-    PName currentPName();
-
-    /**
-     * 可以访问到所有可达的框架实例。
-     *
-     * @return
-     */
-    PBridge toAllBridge();
 
     /**
      * 调用者会把自己可达的路径发给自己返回的listener中。
@@ -74,4 +68,16 @@ public interface PInit
      * @param direction 可访问的方向.
      */
     void link(PInit it, Direction direction);
+
+    /**
+     * 关闭。
+     */
+    void close();
+
+    /**
+     * 是否已经关闭。
+     *
+     * @return
+     */
+    boolean isClosed();
 }
