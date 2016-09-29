@@ -3,102 +3,100 @@ package cn.oftenporter.porter.core.apt;
 import cn.oftenporter.porter.core.annotation.PortInObj;
 import cn.oftenporter.porter.core.util.WPTool;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.DeclaredType;
 import javax.tools.Diagnostic;
-import javax.tools.JavaFileObject;
-import java.io.Closeable;
+import java.io.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/8.
  */
-@SupportedAnnotationTypes({"cn.oftenporter.porter.core.apt.AutoGen"})
+//@SupportedAnnotationTypes({"cn.oftenporter.porter.core.apt.AutoGen"})
 public class PorterProcessor extends AbstractProcessor
 {
     public static final String SUFFIX = "AP";
+    private ProcessingEnvironment processingEnv;
+
+    private void err(String msg, Element element)
+    {
+        processingEnv.getMessager()
+                .printMessage(Diagnostic.Kind.ERROR, msg, element);
+    }
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv)
+    {
+        super.init(processingEnv);
+        this.processingEnv = processingEnv;
+    }
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)
     {
-        final String suffix = SUFFIX;
-        System.out.println("AutoGen process...");
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "AutoGen process...");
-
-        outer:
         for (TypeElement element : annotatedElementsIn(roundEnv))
         {
-            System.out.println("deal:" + element);
-            Closeable closeable = null;
-            try
-            {
-
-                PackageElement packageElement =
-                        (PackageElement) element.getEnclosingElement();
-                SourceGenerator sourceGenerator = new SourceGenerator();
-                sourceGenerator.init(packageElement.getQualifiedName().toString(),
-                        element.getSimpleName().toString());
-
-                List<? extends Element> list = element.getEnclosedElements();
-                for (int k = 0; k < list.size(); k++)
-                {
-                    Element el = list.get(k);
-                    if (el.getKind() == ElementKind.METHOD)
-                    {
-                        ExecutableElement executableElement = (ExecutableElement) el;
-                        if (!executableElement.getModifiers().contains(Modifier.ABSTRACT))
-                        {
-                            continue;
-                        }
-                        if (isNece(executableElement))
-                        {
-                            sourceGenerator.addNeceMethod(executableElement);
-                        } else
-                        {
-                            sourceGenerator.addUnNeceMethod(executableElement);
-                        }
-                    } else if (el.getKind() == ElementKind.FIELD)
-                    {
-                        System.err.println("not support interface field(" + el + ")");
-                        continue outer;
-                    }
-                }
-
-                //创建java源文件
-                Filer filer = processingEnv.getFiler();
-
-                JavaFileObject jfo = filer.createSourceFile(
-                        element.getQualifiedName() + suffix, element);
-                sourceGenerator.setWriter(jfo.openWriter());
-                closeable = sourceGenerator;
-
-                sourceGenerator.append("//" + new Date() + "\n");
-                sourceGenerator.write();
-                sourceGenerator.flush();
-            } catch (GenException e)
-            {
-                processingEnv.getMessager()
-                        .printMessage(Diagnostic.Kind.ERROR, "ex:" + e.getMessage(), element);
-            } catch (Exception e)
-            {
-                processingEnv.getMessager()
-                        .printMessage(Diagnostic.Kind.ERROR, "ex:create source file failed!\n" + e.toString(), element);
-                e.printStackTrace();
-            } finally
-            {
-                WPTool.close(closeable);
-                System.out.println("AutoGen process end!");
-            }
-
-
+            genCode(element);
         }
-        return true;
+        return false;
     }
+
+    private void genCode(TypeElement element)
+    {
+        Closeable closeable = null;
+        try
+        {
+
+            PackageElement packageElement =
+                    (PackageElement) element.getEnclosingElement();
+            SourceGenerator sourceGenerator = new SourceGenerator();
+            sourceGenerator.init(packageElement.getQualifiedName().toString(),
+                    element.getSimpleName().toString());
+
+            List<? extends Element> list = element.getEnclosedElements();
+            for (int k = 0; k < list.size(); k++)
+            {
+                Element el = list.get(k);
+                if (el.getKind() == ElementKind.METHOD)
+                {
+                    ExecutableElement executableElement = (ExecutableElement) el;
+                    if (!executableElement.getModifiers().contains(Modifier.ABSTRACT))
+                    {
+                        continue;
+                    }
+                    if (isNece(executableElement))
+                    {
+                        sourceGenerator.addNeceMethod(executableElement);
+                    } else
+                    {
+                        sourceGenerator.addUnNeceMethod(executableElement);
+                    }
+                } else if (el.getKind() == ElementKind.FIELD)
+                {
+                    err("not support interface field(" + el + ")", el);
+                    return;
+                }
+            }
+            String name = element.getQualifiedName() + SUFFIX;
+            sourceGenerator.append("//" + new Date() + "\n");
+            sourceGenerator.write();
+            //创建java源文件
+            Filer filer = processingEnv.getFiler();
+            sourceGenerator.setWriter(filer.createSourceFile(name).openWriter());
+            closeable = sourceGenerator;
+        } catch (Throwable e)
+        {
+            err("ex:create source file failed!\n" + e.toString(), element);
+            e.printStackTrace();
+        } finally
+        {
+            WPTool.close(closeable);
+        }
+    }
+
 
     private boolean isNece(ExecutableElement element)
     {

@@ -3,14 +3,18 @@ package cn.oftenporter.porter.core.util;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +23,8 @@ import java.util.List;
  */
 public class WPTool
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WPTool.class);
+
     /**
      * 判断是否为null或"".
      *
@@ -95,6 +101,7 @@ public class WPTool
                 ps.close();
             } catch (SQLException e)
             {
+                LOGGER.error(e.getMessage(),e);
             }
         }
     }
@@ -134,7 +141,7 @@ public class WPTool
             msg = cause.toString();
         }
         StackTraceElement element = cause.getStackTrace()[0];
-        return msg+" "+LogUtil.toString(element);
+        return msg + " " + LogUtil.toString(element);
     }
 
     /**
@@ -149,9 +156,33 @@ public class WPTool
             try
             {
                 closeable.close();
-            } catch (IOException e)
+            } catch (Exception e)
             {
-                e.printStackTrace();
+                LOGGER.error(e.getMessage(),e);
+            }
+        }
+    }
+
+    public static void close(Connection connection){
+        if(connection!=null){
+            try
+            {
+                connection.close();
+            } catch (SQLException e)
+            {
+                LOGGER.error(e.getMessage(),e);
+            }
+        }
+    }
+
+    public static void close(Statement statement){
+        if(statement!=null){
+            try
+            {
+                statement.close();
+            } catch (SQLException e)
+            {
+                LOGGER.error(e.getMessage(),e);
             }
         }
     }

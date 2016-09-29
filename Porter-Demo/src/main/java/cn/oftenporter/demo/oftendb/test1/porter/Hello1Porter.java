@@ -10,11 +10,11 @@ import cn.oftenporter.oftendb.data.impl.SourceAndPGetterImpl;
 import cn.oftenporter.oftendb.db.Condition;
 import cn.oftenporter.oftendb.db.NameValues;
 import cn.oftenporter.oftendb.db.Unit;
-import cn.oftenporter.oftendb.util.DBUtil;
 import cn.oftenporter.porter.core.annotation.AutoSet;
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.WObject;
+import cn.oftenporter.porter.core.util.KeyUtil;
 
 @PortIn
 public class Hello1Porter
@@ -36,7 +36,7 @@ public class Hello1Porter
     public Object add(WObject wObject)
     {
 	wObject.finner[0] = new Date();
-	wObject.finner[1] = DBUtil.uuid();
+	wObject.finner[1] = KeyUtil.randomUUID();
 	return Common2.C.addData(source, false, wObject);
     }
 

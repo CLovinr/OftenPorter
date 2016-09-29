@@ -10,7 +10,7 @@ import java.util.Stack;
  * <br>
  * Created by https://github.com/CLovinr on 2016/9/11.
  */
-class BackableSeek
+public class BackableSeek
 {
 
 
@@ -144,7 +144,7 @@ class BackableSeek
      * @param varName
      * @param typeId
      */
-    static void bindVarNameWithTypeId(InNames inNames, String varName, String typeId)
+    public static void bindVarNameWithTypeId(InNames inNames, String varName, String typeId)
     {
         InNames.Name[] names = inNames.nece;
         for (int i = 0; i < names.length; i++)

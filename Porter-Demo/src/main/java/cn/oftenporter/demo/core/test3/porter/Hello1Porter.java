@@ -5,7 +5,6 @@ import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.annotation.PortStart;
 
 @PortIn
-
 class Hello1Porter
 {
     @PortStart

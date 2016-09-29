@@ -9,12 +9,12 @@ public class User
 {
     @PortInObj.Nece("name")
     public String name;
-    @PortInObj.Nece(value = "myAge",autoParse = false)
+    @PortInObj.Nece(value = "myAge")
     public int myAge;
 
     @Override
     public String toString()
     {
-        return "name="+name+",age="+myAge;
+        return "name=" + name + ",age=" + myAge;
     }
 }

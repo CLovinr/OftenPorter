@@ -25,14 +25,24 @@ public class DefaultTypeParserStore implements TypeParserStore
     }
 
     @Override
-    public void put(String id, ITypeParser typeParser)
+    public void putParser(ITypeParser typeParser)
     {
+        String id = typeParser.id();
+        if (id == null)
+        {
+            throw new NullPointerException(typeParser.getClass().getName() + ".id() is null!");
+        }
         map.put(id, typeParser);
     }
 
     @Override
-    public boolean contains(String id)
+    public boolean contains(ITypeParser typeParser)
     {
+        String id = typeParser.id();
+        if (id == null)
+        {
+            throw new NullPointerException(typeParser.getClass().getName() + ".id() is null!");
+        }
         return map.containsKey(id);
     }
 }

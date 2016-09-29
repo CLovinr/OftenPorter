@@ -3,7 +3,6 @@ package cn.oftenporter.porter.core.annotation;
 
 import cn.oftenporter.porter.core.base.ITypeParser;
 import cn.oftenporter.porter.core.init.CommonMain;
-import cn.oftenporter.porter.core.init.PorterConf;
 
 import java.lang.annotation.*;
 
@@ -33,19 +32,19 @@ public @interface Parser
         /**
          * 需要转换的参数的名称。
          */
-        String[] names();
+        String varName();
 
         /**
-         * 转换的类(需要有无参构造函数)。优先于{@linkplain #globals()}。当提供一个时，所有的共有这一个；如果是多个，则必须与{@linkplain #names()}一一对应。
+         * 1)首先会使用Class.getName()获取，同{@linkplain #parserName()};2)转换的类(需要有无参构造函数)。优先于{@linkplain #parserName()}。
          */
-        Class<? extends ITypeParser>[] parsers() default {};
+        Class<? extends ITypeParser> parser() default ITypeParser.class;
 
         /**
-         * 全局转换类的绑定的名称。当提供一个时，所有的共有这一个；如果是多个，则必须与{@linkplain #names()}一一对应。
+         * 全局转换类的绑定的名称。
          * <br>
          * 见{@linkplain CommonMain#addGlobalTypeParser(ITypeParser)}
          */
-        String[] globals() default {};
+        String parserName() default "";
     }
 
     parse[] value();

@@ -8,37 +8,42 @@ public class MultiNameValues
     private String[] names;
     private List<Object[]> valueList;
 
-   
+
     public MultiNameValues()
     {
-	this.valueList = new ArrayList<Object[]>();
+
     }
 
     public MultiNameValues names(String... names)
     {
-	this.names = names;
-	return this;
+        this.names = names;
+        this.valueList = new ArrayList<Object[]>(names.length);
+        return this;
     }
 
     public String[] getNames()
     {
-	return names;
+        return names;
     }
 
     public int count()
     {
-	return valueList.size();
+        return valueList.size();
     }
 
     public Object[] values(int index)
     {
-	return valueList.get(index);
+        return valueList.get(index);
     }
 
     public MultiNameValues addValues(Object... values)
     {
-	valueList.add(values);
-	return this;
+        if (names == null)
+        {
+            throw new RuntimeException("names is null!");
+        }
+        valueList.add(values);
+        return this;
     }
 
 }

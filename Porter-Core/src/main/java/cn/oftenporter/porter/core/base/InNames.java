@@ -41,6 +41,14 @@ public class InNames
         this.inner = inner;
     }
 
+
+    private static final Name[] EMPTY = new Name[0];
+
+    public static InNames temp(Name name)
+    {
+        return new InNames(new Name[]{name}, EMPTY, EMPTY);
+    }
+
     public static InNames fromStringArray(String[] nece, String[] unece, String[] inner)
     {
         return new InNames(toNames(nece), toNames(unece), toNames(inner));

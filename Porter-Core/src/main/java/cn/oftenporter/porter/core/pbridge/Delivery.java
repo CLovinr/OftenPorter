@@ -6,14 +6,15 @@ package cn.oftenporter.porter.core.pbridge;
 public interface Delivery
 {
     /**
-     * 只可以访问当前实例的。
+     * 可以访问当前实例的。请求格式为[/=pname]/contextName/ClassTied/[funTied|restValue][?name1=value1&name2=value2...]
      *
      * @return
      */
     PBridge currentBridge();
 
     /**
-     * 可以访问到所有可达的框架实例。
+     * 可以访问到所有可达的框架实例。请求路径必须是fullPath（请求格式为":pname/contextName/ClassTied/[funTied|restValue][?name1=value1&name2
+     * =value2...]"），即加上pname。
      *
      * @return
      */

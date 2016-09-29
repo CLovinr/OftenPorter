@@ -1,14 +1,13 @@
-package cn.oftenporter.porter.core.base;
+package cn.oftenporter.porter.core.annotation.sth;
 
-import cn.oftenporter.porter.core.annotation.Parser;
+import cn.oftenporter.porter.core.base.InNames;
 
 import java.lang.reflect.Field;
 
 /**
- * 参数类型应该通过过{@linkplain Parser.parse}来转换。
- * Created by https://github.com/CLovinr on 2016/9/7.
+ * @author Created by https://github.com/CLovinr on 2016/9/27.
  */
-public class WPortInObj
+public class InObj
 {
     public static class One
     {
@@ -31,7 +30,7 @@ public class WPortInObj
 
     public final One[] ones;
 
-    public WPortInObj(One[] ones)
+    public InObj(One[] ones)
     {
         this.ones = ones;
     }

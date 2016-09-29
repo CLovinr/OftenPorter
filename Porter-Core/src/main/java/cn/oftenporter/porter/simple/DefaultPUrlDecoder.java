@@ -5,10 +5,10 @@ import cn.oftenporter.porter.core.pbridge.PUrlDecoder;
 /**
  * @author Created by https://github.com/CLovinr on 2016/9/18.
  */
-class DefaultPUrlDecoder implements PUrlDecoder
+public class DefaultPUrlDecoder implements PUrlDecoder
 {
 
-    public static class ResultImpl implements Result
+    static class ResultImpl implements Result
     {
         private String pName, path;
 
@@ -32,16 +32,16 @@ class DefaultPUrlDecoder implements PUrlDecoder
     }
 
     @Override
-    public Result decode(String path)
+    public Result decode(String fullPath)
     {
         Result result = null;
 
-        if (path.startsWith(":"))
+        if (fullPath.startsWith(":"))
         {
-            int index = path.indexOf('/', 1);
+            int index = fullPath.indexOf('/', 1);
             if (index != -1)
             {
-                result = new ResultImpl(path.substring(1, index), path.substring(index));
+                result = new ResultImpl(fullPath.substring(1, index), fullPath.substring(index));
             }
         }
         return result;

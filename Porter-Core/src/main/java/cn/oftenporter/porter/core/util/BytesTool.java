@@ -1,5 +1,8 @@
 package cn.oftenporter.porter.core.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +11,7 @@ import java.util.ArrayList;
 
 public class BytesTool
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BytesTool.class);
 
     /**
      * @param buffer 尽可能读满
@@ -157,7 +161,7 @@ public class BytesTool
 
         } catch (IOException e)
         {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(),e);
         }
         return bos.toByteArray();
     }

@@ -103,14 +103,14 @@ public class DataDynamic extends DataAble
     @Override
     protected NameValues toNameValues(ParamsGetter.Params params) throws Exception
     {
-        NameValues nameValues = new NameValues();
+        NameValues nameValues = new NameValues(jsonObject.size());
         if (jsonObject != null)
         {
-            Iterator<String> names = jsonObject.keySet().iterator();
-            while (names.hasNext())
+            Iterator<Map.Entry<String, Object>> iterator = jsonObject.entrySet().iterator();
+            while (iterator.hasNext())
             {
-                String name = names.next();
-                nameValues.put(name, jsonObject.get(name));
+                Map.Entry<String, Object> entry = iterator.next();
+                nameValues.put(entry.getKey(), entry.getValue());
             }
         }
         return nameValues;

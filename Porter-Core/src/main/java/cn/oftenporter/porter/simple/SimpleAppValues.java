@@ -5,6 +5,7 @@ import cn.oftenporter.porter.core.base.AppValues;
 import com.alibaba.fastjson.JSONObject;
 
 import java.util.Iterator;
+import java.util.Map;
 
 public class SimpleAppValues implements AppValues
 {
@@ -23,21 +24,17 @@ public class SimpleAppValues implements AppValues
     {
         SimpleAppValues simpleAppValues = new SimpleAppValues();
 
-        simpleAppValues.names = new String[jsonObject.size()];
-        int i = 0;
-        Iterator<String> keys = jsonObject.keySet().iterator();
-        while (keys.hasNext())
-        {
-            String key = (String) keys.next();
-            simpleAppValues.names[i++] = key;
-        }
+        String[] names = new String[jsonObject.size()];
+        Object[] values = new Object[jsonObject.size()];
+        simpleAppValues.names=names;
+        simpleAppValues.values=values;
 
-        simpleAppValues.values = new Object[simpleAppValues.names.length];
-        for (int j = 0; j < simpleAppValues.values.length; j++)
-        {
-
-            simpleAppValues.values[j] = jsonObject.get(simpleAppValues.names[j]);
-
+        Iterator<Map.Entry<String,Object>> iterator = jsonObject.entrySet().iterator();
+        int i=0;
+        while (iterator.hasNext()){
+            Map.Entry<String,Object> entry = iterator.next();
+            names[i]=entry.getKey();
+            values[i++]=entry.getValue();
         }
 
         return simpleAppValues;

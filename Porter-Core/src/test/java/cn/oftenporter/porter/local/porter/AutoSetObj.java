@@ -23,6 +23,6 @@ public class AutoSetObj
     @Override
     public String toString()
     {
-        return "id=" + id;
+        return "id=" + id+","+super.toString();
     }
 }

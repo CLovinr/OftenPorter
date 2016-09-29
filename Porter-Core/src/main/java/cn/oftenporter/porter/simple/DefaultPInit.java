@@ -61,7 +61,7 @@ public class DefaultPInit implements PInit
                         return;
                     }
                     PPath path = pathMap.get(pPath.pName.getName());
-                    if (path == null || path.step >= pPath.step + 1)
+                    if (path == null || path.step > pPath.step + 1)
                     {//保存路径更短者
                         PPath newPath = pPath.newPath(pPath.step + 1);
                         putPath(newPath);
@@ -78,25 +78,26 @@ public class DefaultPInit implements PInit
 
         toAll = new PBridge()
         {
+            PUrlDecoder pUrlDecoder = new DefaultPUrlDecoder();
+
             @Override
             public void request(PRequest request, PCallback callback)
             {
-
-                String pname = request.getPName();
+                PUrlDecoder.Result result = pUrlDecoder.decode(request.getPath());
                 PPath path = null;
-                if (pname == null || (path = pathMap.get(pname)) == null || path.pInit.isClosed())
+                if (result == null || (path = pathMap.get(result.pName())) == null || path.pInit.isClosed())
                 {
                     if (path != null && path.pInit.isClosed())
                     {
-                        pathMap.remove(pname);
+                        pathMap.remove(result.pName());
                     }
                     JResponse jResponse = new JResponse(ResultCode.NOT_AVAILABLE);
-                    jResponse.setDescription(":" + (pname == null ? "" : pname) + request.getPath());
+                    jResponse.setDescription(":" + (result == null ? "" : result.pName()) + request.getPath());
                     PResponse response = new Response(jResponse);
                     callback.onResponse(response);
                 } else
                 {
-                    path.pInit.currentBridge().request(request.withNewPath(null, request.getPath()), callback);
+                    path.pInit.currentBridge().request(request.withNewPath(result.path()), callback);
                 }
 
             }
@@ -148,6 +149,7 @@ public class DefaultPInit implements PInit
         }
     }
 
+    //警告提示重复添加
     private void putPath(PPath path)
     {
         PPath last = pathMap.put(path.pInit.currentPName().getName(), path);

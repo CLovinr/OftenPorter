@@ -7,7 +7,7 @@ public interface TypeParserStore
 {
     ITypeParser byId(String id);
 
-    void put(String id, ITypeParser typeParser);
+    void putParser(ITypeParser typeParser);
 
-    boolean contains(String id);
+    boolean contains(ITypeParser typeParser);
 }

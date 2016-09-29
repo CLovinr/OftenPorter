@@ -18,8 +18,6 @@ public class DefaultUrlDecoder implements UrlDecoder
 {
     private String encoding;
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultUrlDecoder.class);
-//    private static final String URL_CHARS = "a-zA-Z-0-9%_\\.\\*\\+\\$&=#-";
-//    private static final Pattern PATTERN = Pattern.compile("^/([" + URL_CHARS + "]+)/([" + URL_CHARS + "]*)$");
 
     public DefaultUrlDecoder(String encoding)
     {
@@ -64,34 +62,48 @@ public class DefaultUrlDecoder implements UrlDecoder
         Map<String, Object> params;
         if (index != -1)
         {
-            params = new HashMap<>();
             int sharpIndex = path.indexOf("#", index);
             if (sharpIndex == -1)
             {
                 sharpIndex = path.length();
             }
-            String[] strs = StrUtil.split(path.substring(index + 1, sharpIndex), "&");
-            try
-            {
-                for (String string : strs)
-                {
-                    index = string.indexOf('=');
-                    if (index != -1)
-                    {
-                        params.put(URLDecoder.decode(string.substring(0, index), encoding),
-                                URLDecoder.decode(string.substring(index + 1), encoding));
-                    }
-                }
-            } catch (UnsupportedEncodingException e)
-            {
-                LOGGER.debug(e.getMessage(), e);
-            }
+            params = decodeParam(path.substring(index + 1, sharpIndex), encoding);
         } else
         {
             params = new HashMap<>(0);
         }
         DefaultUrlResult result = new DefaultUrlResult(params, contextName, classTied, funTied);
         return result;
+    }
+
+    /**
+     * 把name=value&name2=value2格式的内容解析成map。
+     *
+     * @param content     内容
+     * @param urlEncoding 编码那个是
+     * @return 解析的map。
+     */
+    public static Map<String, Object> decodeParam(String content, String urlEncoding)
+    {
+        Map<String, Object> params;
+        params = new HashMap<>();
+        String[] strs = StrUtil.split(content, "&");
+        try
+        {
+            for (String string : strs)
+            {
+                int index = string.indexOf('=');
+                if (index != -1)
+                {
+                    params.put(URLDecoder.decode(string.substring(0, index), urlEncoding),
+                            URLDecoder.decode(string.substring(index + 1), urlEncoding));
+                }
+            }
+        } catch (UnsupportedEncodingException e)
+        {
+            LOGGER.debug(e.getMessage(), e);
+        }
+        return params;
     }
 
 }

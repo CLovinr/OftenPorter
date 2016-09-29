@@ -83,6 +83,17 @@ public class SeekPackages
         return this;
     }
 
+    /**
+     * 添加包。
+     * @param packages 存放的是字符串
+     * @return
+     */
+    public SeekPackages addPorters(JSONArray packages)
+    {
+        jsonArray.addAll(packages);
+        return this;
+    }
+
     public JSONArray getPackages()
     {
         return jsonArray;

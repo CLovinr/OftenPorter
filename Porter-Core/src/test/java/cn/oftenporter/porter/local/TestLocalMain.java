@@ -38,7 +38,7 @@ public class TestLocalMain
         LocalMain localMain = new LocalMain(true, new PName("P1"), "utf-8");
         PorterConf porterConf = localMain.newPorterConf();
         porterConf.setContextName("Local-1");
-        porterConf.getSeekPackages().addPorters("cn.oftenporter.porter.local.porter");
+        porterConf.getSeekPackages().addPorters(getClass().getPackage().getName()+".porter");
         porterConf.getSeekPackages().addClassPorter(My2Porter.class)
                 .addObjectPorter(new MyPorter("Hello MyPorter!"));
         porterConf.addContextAutoGenImpl(IDemo.class.getName(), Demo.class);
@@ -92,7 +92,7 @@ public class TestLocalMain
 
         localMain.startOne(porterConf);
         int n = 100000;
-        int threads = 20;
+        int threads = 5;
 
         ExecutorService executorService = Executors.newFixedThreadPool(threads, new ThreadFactory()
         {
@@ -106,13 +106,25 @@ public class TestLocalMain
         });
 
         //多线程下测试
-        long time = System.currentTimeMillis();
+        long time = System.nanoTime();
         exe(executorService, n, localMain.getBridge());
-        long total = System.currentTimeMillis()-time;
+        long total = System.nanoTime() - time;
 
         logger.debug("**************************************");
-        logger.debug("threads={},n={}:total={}ms,average={}ms", threads,n,total,1.0d*total/n);
+        logger.debug("threads={},n={}:total={}ms,average={}ms", threads, n, 1.0 * total / 1000000,
+                1.0d * total / 1000000 / n);
         logger.debug("**************************************");
+
+        logger.debug("**************AutoSet delay test******************");
+        localMain.getBridge().request(new PRequest("/Local-1/Delay/test"), new PCallback()
+        {
+            @Override
+            public void onResponse(PResponse lResponse)
+            {
+                logger.debug("{}",lResponse);
+            }
+        });
+
         localMain.destroyAll();
     }
 
@@ -121,100 +133,123 @@ public class TestLocalMain
 
         for (int i = 0; i < n; i++)
         {
-            executorService.execute(new Runnable()
+
+            if (executorService == null)
             {
-                @Override
-                public void run()
+                bridge.request(new PRequest("/Local-1/Hello/say").addParam("name", "小明").addParam("age", "22")
+                                .addParam("myAge", 22),
+                        new PCallback()
+                        {
+                            @Override
+                            public void onResponse(PResponse lResponse)
+                            {
+                                assertEquals("小明+22", lResponse.getResponse());
+                            }
+                        });
+            } else
+            {
+                executorService.execute(new Runnable()
                 {
-                    bridge.request(new PRequest("/Local-1/Hello/say").addParam("name", "小明").addParam("age", "22")
-                                    .addParam("myAge", 22),
-                            new PCallback()
-                            {
-                                @Override
-                                public void onResponse(PResponse lResponse)
+                    @Override
+                    public void run()
+                    {
+                        bridge.request(new PRequest("/Local-1/Hello/say").addParam("name", "小明").addParam("age", "22")
+                                        .addParam("myAge", 22),
+                                new PCallback()
                                 {
-                                    assertEquals("小明+22", lResponse.getResponse());
-                                }
-                            });
+                                    @Override
+                                    public void onResponse(PResponse lResponse)
+                                    {
+                                        assertEquals("小明+22", lResponse.getResponse());
+                                    }
+                                });
 
-                    bridge.request(new PRequest("/Local-1/Hello/parseObject").addParam("title", "转换成对象")
-                                    .addParam("comments", "['c1','c2']")
-                                    .addParam("content", "this is content!")
-                                    .addParam("time", String.valueOf(System.currentTimeMillis()))
-                                    .addParam("name", "小傻").addParam("myAge", "18"),
-                            new PCallback()
-                            {
-                                @Override
-                                public void onResponse(PResponse lResponse)
+                        bridge.request(new PRequest("/Local-1/Hello/parseObject").addParam("title", "转换成对象")
+                                        .addParam("comments", "['c1','c2']")
+                                        .addParam("content", "this is content!")
+                                        .addParam("time", String.valueOf(System.currentTimeMillis()))
+                                        .addParam("name", "小傻").addParam("myAge", "18"),
+                                new PCallback()
                                 {
-                                    assertTrue(
-                                            lResponse.getResponse() instanceof User || lResponse.getResponse() instanceof Article);
-                                }
-                            });
+                                    @Override
+                                    public void onResponse(PResponse lResponse)
+                                    {
+                                        assertTrue(
+                                                lResponse.getResponse() instanceof User || lResponse
+                                                        .getResponse() instanceof Article);
+                                    }
+                                });
 
-                    bridge.request(new PRequest("/Local-1/Hello/").addParam("sex", "男").addParam("name", "name2")
-                            .addParam("myAge", 10), new PCallback()
-                    {
-                        @Override
-                        public void onResponse(PResponse lResponse)
+                        bridge.request(new PRequest("/Local-1/Hello/").addParam("sex", "男").addParam("name", "name2")
+                                .addParam("myAge", 10), new PCallback()
                         {
-                            assertEquals("=男", lResponse.getResponse());
-                        }
-                    });
+                            @Override
+                            public void onResponse(PResponse lResponse)
+                            {
+                                assertEquals("=男", lResponse.getResponse());
+                            }
+                        });
 
 
-                    bridge.request(new PRequest("/Local-1/Hello").setMethod(PortMethod.POST).addParam("name", "name3")
-                            .addParam("myAge", 10).addParam("sex", "0"), new PCallback()
-                    {
-                        @Override
-                        public void onResponse(PResponse lResponse)
+                        bridge.request(
+                                new PRequest("/Local-1/Hello").setMethod(PortMethod.POST).addParam("name", "name3")
+                                        .addParam("myAge", 10).addParam("sex", "0"), new PCallback()
+                                {
+                                    @Override
+                                    public void onResponse(PResponse lResponse)
+                                    {
+                                        assertEquals(":0", lResponse.getResponse());
+                                    }
+                                });
+
+                        bridge.request(new PRequest("/Local-1/Hello/hihihi").setMethod(PortMethod.POST)
+                                .addParam("name", "name4")
+                                .addParam("myAge", 10).addParam("sex", "0"), new PCallback()
                         {
-                            assertEquals(":0", lResponse.getResponse());
-                        }
-                    });
+                            @Override
+                            public void onResponse(PResponse lResponse)
+                            {
+                                assertEquals("hihihi:0", lResponse.getResponse());
+                            }
+                        });
 
-                    bridge.request(new PRequest("/Local-1/Hello/hihihi").setMethod(PortMethod.POST)
-                            .addParam("name", "name4")
-                            .addParam("myAge", 10).addParam("sex", "0"), new PCallback()
-                    {
-                        @Override
-                        public void onResponse(PResponse lResponse)
+                        bridge.request(new PRequest("/Local-1/My2/hello"), new PCallback()
                         {
-                            assertEquals("hihihi:0", lResponse.getResponse());
-                        }
-                    });
+                            @Override
+                            public void onResponse(PResponse lResponse)
+                            {
+                                assertEquals("My2Porter", lResponse.getResponse());
+                            }
+                        });
+                        bridge.request(new PRequest("/Local-1/My/hello").addParam("name", "Demo001"), new PCallback()
+                        {
+                            @Override
+                            public void onResponse(PResponse lResponse)
+                            {
+                                assertTrue(lResponse.getResponse() instanceof IDemo);
+                            }
+                        });
 
-                    bridge.request(new PRequest("/Local-1/My2/hello"), new PCallback()
-                    {
-                        @Override
-                        public void onResponse(PResponse lResponse)
-                        {
-                            assertEquals("My2Porter", lResponse.getResponse());
-                        }
-                    });
-                    bridge.request(new PRequest("/Local-1/My/hello").addParam("name", "Demo001"), new PCallback()
-                    {
-                        @Override
-                        public void onResponse(PResponse lResponse)
-                        {
-                            assertTrue(lResponse.getResponse() instanceof IDemo);
-                        }
-                    });
+                    }
+                });
+            }
 
-                }
-            });
+
         }
 
-        try
+        if (executorService != null)
         {
-            executorService.shutdown();
-            while (!executorService.isTerminated())
+            try
             {
-                Thread.sleep(20);
+                executorService.shutdown();
+                while (!executorService.isTerminated())
+                {
+                    Thread.sleep(20);
+                }
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
             }
-        } catch (InterruptedException e)
-        {
-            e.printStackTrace();
         }
     }
 }

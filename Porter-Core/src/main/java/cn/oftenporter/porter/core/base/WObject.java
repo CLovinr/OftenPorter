@@ -78,7 +78,7 @@ public abstract class WObject
 
     /**
      * 获取当前context运行期对象实例。
-     * 见{@linkplain PorterConf#addContextRuntimeObject(String, Object)}
+     * 见{@linkplain PorterConf#addContextAutoSet(String, Object)}
      */
     public abstract Object savedObject(String key);
 

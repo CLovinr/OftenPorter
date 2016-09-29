@@ -1,5 +1,8 @@
 package cn.oftenporter.porter.core.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -35,9 +38,10 @@ public class PackageUtil
 
         /**
          * 设置搜索的包。
-         * @param packages
+         *
+         * @param packages 存放的是字符串
          */
-       void setPackages(String... packages);
+        void setPackages(List<?> packages);
 
         /**
          * 搜索
@@ -52,6 +56,7 @@ public class PackageUtil
 
 
     public static final String ENCODING = "utf-8";
+    private static final Logger LOGGER = LoggerFactory.getLogger(PackageUtil.class);
 
     public static Class<?> newClass(String className, ClassLoader classLoader) throws ClassNotFoundException
     {
@@ -63,7 +68,18 @@ public class PackageUtil
                 c = Class.forName(className, false, classLoader);
             } catch (ClassNotFoundException e)
             {
-
+                //LOGGER.error(e.getMessage(), e);
+            }
+        }
+        if (c == null)
+        {
+            try
+            {
+                classLoader = Thread.currentThread().getContextClassLoader();
+                c = Class.forName(className, false, classLoader);
+            } catch (ClassNotFoundException e)
+            {
+                //LOGGER.error(e.getMessage(), e);
             }
         }
         if (c == null)
@@ -79,9 +95,9 @@ public class PackageUtil
      * @param packageName 包名
      * @return 类的完整名称
      */
-    public static List<String> getClassName(String packageName)
+    public static List<String> getClassName(String packageName, ClassLoader classLoader)
     {
-        return getClassName(packageName, true);
+        return getClassName(packageName, classLoader, true);
     }
 
     /**
@@ -91,11 +107,11 @@ public class PackageUtil
      * @param childPackage 是否遍历子包
      * @return 类的完整名称
      */
-    public static List<String> getClassName(String packageName, boolean childPackage)
+    public static List<String> getClassName(String packageName, ClassLoader classLoader, boolean childPackage)
     {
         try
         {
-            return _getClassName(packageName,childPackage);
+            return _getClassName(packageName, classLoader, childPackage);
         } catch (UnsupportedEncodingException e)
         {
             throw new RuntimeException(e.getMessage());
@@ -110,10 +126,11 @@ public class PackageUtil
      * @param childPackage 是否遍历子包
      * @return 类的完整名称
      */
-    private static List<String> _getClassName(String packageName, boolean childPackage) throws UnsupportedEncodingException
+    private static List<String> _getClassName(String packageName, ClassLoader classLoader,
+            boolean childPackage) throws UnsupportedEncodingException
     {
         List<String> fileNames = null;
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        ClassLoader loader = classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
         String packagePath = packageName.replace('.', '/');
         URL url = loader.getResource(packagePath);
         if (url != null)
@@ -122,7 +139,7 @@ public class PackageUtil
             //LogUtil.printLnPos(url);
             if (type.equals("file"))
             {
-                fileNames = getClassNameByFile(packageName, URLDecoder.decode(url.getFile(),ENCODING), childPackage);
+                fileNames = getClassNameByFile(packageName, URLDecoder.decode(url.getFile(), ENCODING), childPackage);
             } else if (type.equals("jar"))
             {
                 fileNames = getClassNameByJar(URLDecoder.decode(url.getFile(), ENCODING), childPackage);
@@ -132,9 +149,9 @@ public class PackageUtil
             if (loader instanceof IClassLoader)
             {
                 IClassLoader iClassLoader = (IClassLoader) loader;
-                //myClassLoader.seek();
+                iClassLoader.seek();
                 fileNames = iClassLoader.getClassNames(packageName, childPackage);
-                //myClassLoader.release();
+                iClassLoader.release();
             } else
             {
                 fileNames = getClassNameByJars(getUrls(loader, packageName), packagePath, childPackage);
@@ -152,7 +169,7 @@ public class PackageUtil
             ArrayList<URL> list = new ArrayList<URL>();
             while (enumeration.hasMoreElements())
             {
-                URL url =  enumeration.nextElement();
+                URL url = enumeration.nextElement();
                 list.add(url);
             }
             return list.toArray(new URL[0]);
@@ -213,7 +230,10 @@ public class PackageUtil
     private static List<String> getClassNameByJar(String jarPath, boolean childPackage)
     {
         List<String> myClassName = new ArrayList<String>();
-        String[] jarInfo = jarPath.split("!");
+
+        int index = jarPath.indexOf('!');
+
+        String[] jarInfo = {jarPath.substring(0, index), jarPath.substring(index + 1)};
         String jarFilePath = jarInfo[0].substring(jarInfo[0].indexOf("/"));
         String packagePath = jarInfo[1].substring(1);
         JarFile jarFile = null;
@@ -236,7 +256,7 @@ public class PackageUtil
                         }
                     } else
                     {
-                        int index = entryName.lastIndexOf("/");
+                        index = entryName.lastIndexOf("/");
                         String myPackagePath;
                         if (index != -1)
                         {
@@ -256,7 +276,7 @@ public class PackageUtil
 
         } catch (Exception e)
         {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         } finally
         {
             if (jarFile != null)

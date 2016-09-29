@@ -1,7 +1,8 @@
 package cn.oftenporter.porter.core;
 
+import cn.oftenporter.porter.core.annotation.sth.CacheOne;
 import cn.oftenporter.porter.core.base.*;
-import cn.oftenporter.porter.core.base.PortUtil.CacheOne;
+import cn.oftenporter.porter.core.init.InnerContextBridge;
 import cn.oftenporter.porter.core.util.EnumerationImpl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -22,32 +23,22 @@ import java.util.*;
 public class TypeTo
 {
 
-    private PortInObjConf portInObjConf;
-    private ParamDealt paramDealt;
-    private static final String TAG = TypeTo.class.getName();
     private static final Logger LOGGER = LoggerFactory.getLogger(TypeTo.class);
 
+    private InnerContextBridge innerContextBridge;
+
     /**
-     * @param portInObjConf
+     * @param innerContextBridge
      */
-    TypeTo(ParamDealt paramDealt, PortInObjConf portInObjConf)
+    public TypeTo(InnerContextBridge innerContextBridge)
     {
-        this.paramDealt = paramDealt;
-        this.portInObjConf = portInObjConf;
+        this.innerContextBridge = innerContextBridge;
     }
 
     private CacheOne getCache(Class<?> clazz) throws Exception
     {
-
-        CacheOne cache = CacheOne.getCacheOne(clazz);
-        if (cache == null)
-        {
-            WPortInObj.One one = PortUtil.buildInOne(clazz, portInObjConf, TAG);
-            cache = new CacheOne(one);
-            CacheOne.put(clazz, cache);
-        }
+        CacheOne cache = innerContextBridge.innerBridge.cacheTool.getCacheOne(clazz, innerContextBridge);
         return cache;
-
     }
 
     /**
@@ -97,10 +88,11 @@ public class TypeTo
 
             if (binded)
             {
-                LOGGER.debug("bind [{}] with parser [{}](id={})",field,typeParser,typeParser.id());
-                if (!portInObjConf.getTypeParserStore().contains(typeParser.id()))
+                LOGGER.debug("bind [{}] with parser [{}](id={})", field, typeParser, typeParser.id());
+                TypeParserStore typeParserStore = innerContextBridge.innerBridge.globalParserStore;
+                if (!typeParserStore.contains(typeParser))
                 {
-                    portInObjConf.getTypeParserStore().put(typeParser.id(), typeParser);
+                    typeParserStore.putParser(typeParser);
                 }
             } else
             {
@@ -122,7 +114,7 @@ public class TypeTo
         {
 
             CacheOne cache = getCache(clazz);
-            Object object = PortUtil.paramDealOne(paramDealt, cache.getOne(), new ParamSource()
+            Object object = PortUtil.paramDealOne(innerContextBridge.paramDealt, cache.getOne(), new ParamSource()
             {
                 @Override
                 public Object getParam(String name)
@@ -141,7 +133,7 @@ public class TypeTo
                 {
                     return new EnumerationImpl<String>(jsonObject.keySet());
                 }
-            }, portInObjConf.getTypeParserStore());
+            }, innerContextBridge.innerBridge.globalParserStore);
             if (object instanceof ParamDealt.FailedReason)
             {
                 ParamDealt.FailedReason rease = (ParamDealt.FailedReason) object;

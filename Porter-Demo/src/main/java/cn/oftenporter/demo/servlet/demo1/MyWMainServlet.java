@@ -4,6 +4,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
 
+import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ import cn.oftenporter.servlet.WMainServlet;
  *         2016年9月6日 下午11:55:04
  *
  */
-@WebServlet(name = "PorterServlet", urlPatterns = "/demo1/*",
+@WebServlet(name = "PorterServlet", urlPatterns = "/*",
 	loadOnStartup = 10,
 	initParams = { @WebInitParam(name = "pname", value = "Servlet1")
 	// @WebInitParam(name = "urlEncoding", value = "utf-8")
@@ -45,6 +46,8 @@ public class MyWMainServlet extends WMainServlet
     public void init() throws ServletException
     {
 	super.init();
+	PropertyConfigurator
+		.configure(getClass().getResource("/log4j.properties"));
 	PorterConf porterConf = newPorterConf();
 
 	porterConf.addContextCheck(new CheckPassable()
@@ -60,7 +63,7 @@ public class MyWMainServlet extends WMainServlet
 	});
 
 	porterConf.getSeekPackages()
-		.addPorters("test.chenyg.port_servlet.demo1");
+		.addPorters(getClass().getPackage().getName()+".porter");
 	porterConf.setContextName("T1");
 
 	startOne(porterConf);
@@ -74,9 +77,9 @@ public class MyWMainServlet extends WMainServlet
 		.addPorters(getClass().getPackage().getName() + ".lporter");
 	localMain.startOne(porterConf2);
 
-	localMain.getPInit().link(servletInit, Direction.ToIt);
+	localMain.getPInit().link(servletInit, Direction.BothAll);
 
-	PRequest request = new PRequest("/T1/Inner/say").pname("Servlet1")
+	PRequest request = new PRequest(":Servlet1/T1/Hello/say")
 		.addParam("name", "xiaoming").addParam("age", 15)
 		.addParam("sex", "男");
 

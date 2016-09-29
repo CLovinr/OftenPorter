@@ -19,8 +19,7 @@ import java.lang.annotation.*;
  * }
  * </pre>
  * <p>
- * <strong>注意：</strong>对于此方式注解的绑定类，如果某些变量没有被绑定{@linkplain ITypeParser}，则会从类或函数的{@linkplain Parser.parse}中获取绑定；
- * 并且绑定之后，在其他地方使用该类时，不需要要绑定了，因为类的绑定是<strong>全局的(针对所有context)</strong>.
+ * <strong>注意：</strong>对于此方式注解的绑定类，对应的field使用{@linkplain Parser}或{@linkplain Parser.parse}来手动绑定类型转换，可以注解在类或field上.
  * </p>
  * Created by https://github.com/CLovinr on 2016/9/7.
  */
@@ -37,13 +36,8 @@ public @interface PortInObj
     @Target({ElementType.FIELD, ElementType.METHOD})
     @Inherited
     @Documented
-    public @interface Nece
+    @interface Nece
     {
-        /**
-         * 是否自动绑定类型转换。默认为true。支持自动的绑定的类型见包{@linkplain cn.oftenporter.porter.simple.parsers}。
-         */
-        boolean autoParse() default true;
-
         /**
          * 为""表示使用变量的名称。
          *
@@ -59,15 +53,8 @@ public @interface PortInObj
     @Target({ElementType.FIELD, ElementType.METHOD})
     @Inherited
     @Documented
-    public @interface UnNece
+    @interface UnNece
     {
-        /**
-         * 见{@linkplain Nece#autoParse()}
-         *
-         * @return
-         */
-        boolean autoParse() default true;
-
         /**
          * 为""表示使用变量的名称。
          *
@@ -78,7 +65,8 @@ public @interface PortInObj
 
 
     /**
-     * 类或接口。
+     * 类或接口。对应的类或接口可以使用{@linkplain Parser}或{@linkplain Parser.parse}来绑定类型转换;
+     * 对应的变量或接口函数可以用{@linkplain Parser.parse}来绑定类型转换。
      * <br>
      *
      * @return

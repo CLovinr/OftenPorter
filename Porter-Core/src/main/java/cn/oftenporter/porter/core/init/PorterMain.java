@@ -7,16 +7,17 @@ import cn.oftenporter.porter.core.pbridge.PInit;
 import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.core.util.WPTool;
 import cn.oftenporter.porter.simple.DefaultPInit;
-import cn.oftenporter.porter.simple.DefaultTypeParserStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
  * 接口入口对象。
+ * <pre>
+ *     请求格式为[=pname]/contextName/ClassTied/[funTied|restValue][?name1=value1&name2=value2...]
+ * </pre>
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
 public class PorterMain
@@ -25,9 +26,7 @@ public class PorterMain
 
     private boolean isInit;
     private static final Logger LOGGER = LoggerFactory.getLogger(PorterMain.class);
-    private Map<String, Object> globalAutoSet;
-    private TypeParserStore globalParserStore;
-    private List<CheckPassable> allGlobalChecks;
+    private InnerBridge innerBridge;
     private PInit pInit;
 
     /**
@@ -36,9 +35,7 @@ public class PorterMain
      */
     public PorterMain(PName pName, PBridge bridge)
     {
-        globalAutoSet = new ConcurrentHashMap<>();
-        this.globalParserStore = new DefaultTypeParserStore();
-        this.allGlobalChecks = new Vector<>();
+        this.innerBridge = new InnerBridge();
         pInit = new DefaultPInit(pName, bridge);
     }
 
@@ -50,11 +47,11 @@ public class PorterMain
 
     public synchronized void addGlobalCheck(CheckPassable checkPassable) throws RuntimeException
     {
-        if (allGlobalChecks == null)
+        if (innerBridge.allGlobalChecksTemp == null)
         {
-            throw new RuntimeException("illegal invoke time!");
+            throw new RuntimeException("just for the time when has no context!");
         }
-        allGlobalChecks.add(checkPassable);
+        innerBridge.allGlobalChecksTemp.add(checkPassable);
     }
 
     public synchronized void init(UrlDecoder urlDecoder, boolean responseWhenException)
@@ -64,7 +61,7 @@ public class PorterMain
             throw new RuntimeException("already init!");
         }
         isInit = true;
-        portExecutor = new PortExecutor(pInit, globalAutoSet, globalParserStore, urlDecoder, responseWhenException);
+        portExecutor = new PortExecutor(pInit, urlDecoder, responseWhenException);
     }
 
 
@@ -83,12 +80,12 @@ public class PorterMain
 
     public synchronized void addGlobalTypeParser(ITypeParser typeParser)
     {
-        globalParserStore.put(typeParser.id(), typeParser);
+        innerBridge.globalParserStore.putParser(typeParser);
     }
 
     public synchronized void addGlobalAutoSet(String name, Object object)
     {
-        Object last = globalAutoSet.put(name, object);
+        Object last = innerBridge.globalAutoSet.put(name, object);
         if (last != null)
         {
             LOGGER.warn("the global object named '{}' added before [{}]", name, last);
@@ -106,12 +103,14 @@ public class PorterMain
             throw new RuntimeException("Context named '" + bridge.contextName() + "' already exist!");
         }
 
-        if (allGlobalChecks != null)
-        {
-            CheckPassable[] alls = allGlobalChecks.toArray(new CheckPassable[0]);
-            allGlobalChecks = null;
+
+        if (innerBridge.allGlobalChecksTemp != null)
+        {//全局检测，在没有启动任何context时有效。
+            CheckPassable[] alls = innerBridge.allGlobalChecksTemp.toArray(new CheckPassable[0]);
+            innerBridge.allGlobalChecksTemp = null;
             portExecutor.initAllGlobalChecks(alls);
         }
+
 
         PorterConf porterConf = bridge.porterConf();
         PortContext portContext = new PortContext();
@@ -123,7 +122,12 @@ public class PorterMain
         ParamSourceHandleManager paramSourceHandleManager = bridge.paramSourceHandleManager();
 
         stateListenerForAll.beforeSeek(porterConf.getUserInitParam(), porterConf, paramSourceHandleManager);
-        portContext.initSeek(porterConf, globalParserStore, globalAutoSet, bridge);
+
+        InnerContextBridge innerContextBridge = new InnerContextBridge(porterConf.getClassLoader(), innerBridge,
+                porterConf.getContextAutoSetMap(), porterConf.getContextAutoGenImplMap(),
+                porterConf.isEnableTiedNameDefault(), bridge, porterConf.isResponseWhenException());
+
+        portContext.initSeek(porterConf, innerContextBridge);
         LOGGER.debug("{} afterSeek...", porterConf.getContextName());
         stateListenerForAll.afterSeek(porterConf.getUserInitParam(), paramSourceHandleManager);
 
@@ -131,7 +135,7 @@ public class PorterMain
 
         LOGGER.debug("{} afterStart...", porterConf.getContextName());
         stateListenerForAll.afterStart(porterConf.getUserInitParam());
-        portExecutor.addContext(bridge, portContext, stateListenerForAll);
+        portExecutor.addContext(bridge, portContext, stateListenerForAll, innerContextBridge);
         porterConf.initOk();
         LOGGER.debug("{} started!", porterConf.getContextName());
 
@@ -181,13 +185,13 @@ public class PorterMain
         portExecutor.enableContext(contextName, enable);
     }
 
-    public void doRequest(PortExecutor.Request req, WRequest request, WResponse response)
+    public void doRequest(PreRequest req, WRequest request, WResponse response)
     {
         portExecutor.doRequest(req, request, response);
     }
 
-    public PortExecutor.Request forRequest(WRequest request, WResponse response)
+    public PreRequest forRequest(WRequest request, WResponse response)
     {
-        return portExecutor.forRequest(request, response);
+        return portExecutor.forRequest(request, response,pInit);
     }
 }

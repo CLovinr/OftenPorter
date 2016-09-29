@@ -1,6 +1,6 @@
 package cn.oftenporter.porter.local;
 
-import cn.oftenporter.porter.core.PortExecutor;
+import cn.oftenporter.porter.core.PreRequest;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.ITypeParser;
 import cn.oftenporter.porter.core.init.CommonMain;
@@ -27,7 +27,7 @@ public class LocalMain implements CommonMain
             public void request(PRequest request, PCallback callback)
             {
                 LocalResponse resp = new LocalResponse(callback);
-                PortExecutor.Request req = porterMain.forRequest(request, resp);
+                PreRequest req = porterMain.forRequest(request, resp);
                 if (req != null)
                 {
                     porterMain.doRequest(req, request, resp);

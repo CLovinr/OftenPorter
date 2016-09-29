@@ -16,16 +16,16 @@ import cn.oftenporter.porter.simple.parsers.StringParser;
 /**
  * Created by https://github.com/CLovinr on 2016/9/4.
  */
-@Parser({ @Parser.parse(names = { "age" }, parsers = IntParser.class) })
-@Parser.parse(names = { "sex" }, parsers = StringParser.class)
+@Parser({ @Parser.parse(varName =  "age" , parser = IntParser.class) })
+@Parser.parse(varName =  "sex" , parser = StringParser.class)
 @PortIn(value = "", tiedType = TiedType.REST)
 public  class HelloPorter
 {
 
     
 
-    // @AutoSet
-    // private PersonAP personAP;
+     //@AutoSet
+     //private PersonAP personAP;
 
     @AutoSet
     private ArrayList<String> list;

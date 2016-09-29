@@ -4,7 +4,6 @@ import cn.oftenporter.porter.core.annotation.AutoSet;
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.annotation.PortInObj;
 import cn.oftenporter.porter.core.base.*;
-import cn.oftenporter.porter.simple.DefaultTypeParserStore;
 
 import java.util.*;
 
@@ -18,7 +17,6 @@ public class PorterConf
     private Set<StateListener> stateListenerSet;
     private List<CheckPassable> contextChecks;
     private Map<String, Object> contextAutoSetMap;
-    private Map<String, Object> contextRuntimeMap;
     private Map<String, Class<?>> contextAutoGenImplMap;
     private ClassLoader classLoader;
     private boolean responseWhenException = true;
@@ -36,7 +34,6 @@ public class PorterConf
         userInitParam = new InitParamSourceImpl();
         contextAutoSetMap = new HashMap<>();
         contextAutoGenImplMap = new HashMap<>();
-        contextRuntimeMap = new HashMap<>();
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
@@ -122,24 +119,6 @@ public class PorterConf
         return contextAutoGenImplMap;
     }
 
-    /**
-     * 添加运行期对象。只对当前context有效。
-     *
-     * @param name   用于查找的名称（唯一）。
-     * @param object 添加的对象
-     */
-    public void addContextRuntimeObject(String name, Object object)
-    {
-        contextRuntimeMap.put(name, object);
-    }
-
-
-    public Map<String, Object> getContextRuntimeMap()
-    {
-        return contextRuntimeMap;
-    }
-
-
     public boolean isResponseWhenException()
     {
         return responseWhenException;
@@ -209,7 +188,6 @@ public class PorterConf
         contextChecks = null;
         contextAutoSetMap = null;
         contextAutoGenImplMap = null;
-        contextRuntimeMap = null;
         stateListenerSet = null;
     }
 }

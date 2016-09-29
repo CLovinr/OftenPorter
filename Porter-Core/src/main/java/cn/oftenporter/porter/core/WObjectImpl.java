@@ -60,13 +60,13 @@ class WObjectImpl extends WObject
     @Override
     public Object savedObject(String key)
     {
-        return context.contextRuntimeMap.get(key);
+        return context.innerContextBridge.contextAutoSet.get(key);
     }
 
     @Override
     public Object gsavedObject(String key)
     {
-        return context.globalAutoSetMap.get(key);
+        return context.innerContextBridge.innerBridge.globalAutoSet.get(key);
     }
 
     @Override

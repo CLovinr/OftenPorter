@@ -14,7 +14,6 @@ public class PRequest implements WRequest, Cloneable
 {
     private String requestPath;
     private PortMethod method;
-    private String pname;
     private HashMap<String, Object> params = new HashMap<String, Object>();
 
     public PRequest(PortMethod method, String requestPath)
@@ -28,29 +27,13 @@ public class PRequest implements WRequest, Cloneable
         this(PortMethod.GET, requestPath);
     }
 
-    /**
-     * 设置框架接口名称。
-     *
-     * @param pname
-     * @return
-     */
-    public PRequest pname(String pname)
-    {
-        this.pname = pname;
-        return this;
-    }
 
-    public String getPName()
-    {
-        return pname;
-    }
 
-    public PRequest withNewPath(String newPName, String newPath)
+    public PRequest withNewPath(String newPath)
     {
         try
         {
             PRequest request = (PRequest) clone();
-            request.pname = newPName;
             request.requestPath = newPath;
             return request;
         } catch (CloneNotSupportedException e)

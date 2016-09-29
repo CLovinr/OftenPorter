@@ -17,6 +17,12 @@ public class DefaultPInitTest
     @Test
     public void test()
     {
+        testLink(PInit.Direction.ToIt);
+        testLink(PInit.Direction.BothAll);
+    }
+
+    private void testLink(PInit.Direction direction)
+    {
         int count = 10;
         int threads = 10;
         int n = 10;
@@ -29,17 +35,17 @@ public class DefaultPInitTest
         //exe(threads, n, pInits);
 
 
-        pInits[0].link(pInits[1], PInit.Direction.ToIt);
-        pInits[0].link(pInits[4], PInit.Direction.ToIt);
-        pInits[0].link(pInits[5], PInit.Direction.ToIt);
+        pInits[0].link(pInits[1], direction);
+        pInits[0].link(pInits[4], direction);
+        pInits[0].link(pInits[5], direction);
 
-        pInits[1].link(pInits[2], PInit.Direction.ToIt);
-        pInits[4].link(pInits[3], PInit.Direction.ToIt);
-        pInits[2].link(pInits[5], PInit.Direction.ToIt);
+        pInits[1].link(pInits[2], direction);
+        pInits[4].link(pInits[3], direction);
+        pInits[2].link(pInits[5], direction);
 
-        pInits[5].link(pInits[4], PInit.Direction.ToIt);
-        pInits[5].link(pInits[0], PInit.Direction.ToIt);
-        pInits[3].link(pInits[2], PInit.Direction.ToIt);
+        pInits[5].link(pInits[4], direction);
+        pInits[5].link(pInits[0], direction);
+        pInits[3].link(pInits[2], direction);
 
         for (int i = 0; i < pInits.length; i++)
         {

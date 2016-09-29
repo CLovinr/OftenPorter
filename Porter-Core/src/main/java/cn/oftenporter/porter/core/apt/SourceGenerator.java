@@ -1,6 +1,7 @@
 package cn.oftenporter.porter.core.apt;
 
 import cn.oftenporter.porter.core.annotation.PortInObj;
+import cn.oftenporter.porter.core.util.FileTool;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -9,11 +10,14 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import java.awt.*;
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.List;
 
 /**
  * <br>
@@ -25,11 +29,6 @@ class SourceGenerator implements Closeable
     private String name;
     private Set<String> imports;
     private List<ReturnAndName> nece, unnece;
-
-    public void flush() throws IOException
-    {
-        writer.flush();
-    }
 
     static class ReturnAndName
     {
@@ -56,21 +55,43 @@ class SourceGenerator implements Closeable
     }
 
 
-    private Writer writer;
+    private Writer _writer;
+    StringBuilder stringBuilder = new StringBuilder();
 
     public SourceGenerator()
     {
+        _writer = new Writer()
+        {
+
+            @Override
+            public void write(char[] cbuf, int off, int len) throws IOException
+            {
+                stringBuilder.append(cbuf, off, len);
+            }
+
+            @Override
+            public void flush() throws IOException
+            {
+
+            }
+
+            @Override
+            public void close() throws IOException
+            {
+
+            }
+        };
     }
 
     public SourceGenerator append(char c) throws IOException
     {
-        writer.append(c);
+        _writer.append(c);
         return this;
     }
 
     public SourceGenerator append(CharSequence c) throws IOException
     {
-        writer.append(c);
+        _writer.append(c);
         return this;
     }
 
@@ -85,7 +106,6 @@ class SourceGenerator implements Closeable
         imports.add(PortInObj.class.getName());
     }
 
-    private Element currentElement;
 
     private String getReturnType(TypeMirror returnType)
     {
@@ -129,7 +149,6 @@ class SourceGenerator implements Closeable
 
     private ReturnAndName addImport(ExecutableElement methodElement, Annotation annotation)
     {
-        currentElement = methodElement;
         String returnType = getReturnType(methodElement.getReturnType());
         int dotIndex = returnType.lastIndexOf('.');
         if (dotIndex != -1)
@@ -168,10 +187,11 @@ class SourceGenerator implements Closeable
         return this;
     }
 
+    private Writer writer_;
 
     public void setWriter(Writer writer)
     {
-        this.writer = writer;
+        this.writer_ = writer;
     }
 
     public void write() throws IOException
@@ -261,15 +281,11 @@ class SourceGenerator implements Closeable
             if (returnAndName.annotation instanceof PortInObj.Nece)
             {
                 PortInObj.Nece nece = (PortInObj.Nece) returnAndName.annotation;
-                append("(value=\"").append(nece.value()).append("\",autoParse=")
-                        .append(String.valueOf(nece.autoParse()))
-                        .append(')');
+                append("(value=\"").append(nece.value()).append("\")");
             } else
             {
                 PortInObj.UnNece unNece = (PortInObj.UnNece) returnAndName.annotation;
-                append("(value=\"").append(unNece.value()).append("\",autoParse=")
-                        .append(String.valueOf(unNece.autoParse()))
-                        .append(')');
+                append("(value=\"").append(unNece.value()).append("\")");
             }
         }
         newLine();
@@ -299,10 +315,20 @@ class SourceGenerator implements Closeable
     @Override
     public void close() throws IOException
     {
-        if (writer != null)
+        try
         {
-            writer.close();
+            writer_.append(stringBuilder);
+        } finally
+        {
+            writer_.close();
         }
+
+
     }
 
+    @Override
+    public String toString()
+    {
+        return stringBuilder.toString();
+    }
 }

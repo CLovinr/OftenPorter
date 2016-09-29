@@ -12,5 +12,5 @@ public interface PUrlDecoder
         String path();
     }
 
-    Result decode(String path);
+    Result decode(String fullPath);
 }

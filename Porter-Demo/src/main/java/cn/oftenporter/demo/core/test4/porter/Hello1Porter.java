@@ -18,7 +18,7 @@ import cn.oftenporter.porter.simple.parsers.ShortParser;
  *
  */
 @PortIn
-@Parser({ @Parser.parse(names = { "age" }, parsers = { IntParser.class }) })
+@Parser({ @Parser.parse(varName = "age", parser = IntParser.class) })
 public class Hello1Porter
 {
     /**
@@ -31,21 +31,20 @@ public class Hello1Porter
      */
 
     @PortIn(method = PortMethod.POST, nece = { "age" })
-    @Parser({
-	    @Parser.parse(names = { "age" }, parsers = { ShortParser.class }) })
+    @Parser({ @Parser.parse(varName = "age", parser = ShortParser.class) })
     public Object say(WObject wObject)
     {
 	short age = (short) wObject.fn[0];
 	return age + "岁";
     }
-    
+
     @PortIn(method = PortMethod.POST, nece = { "age" })
     public Object say2(WObject wObject)
     {
 	int age = (int) wObject.fn[0];
 	return age + "岁";
     }
-    
+
     @PortIn(method = PortMethod.POST, nece = { "age" })
     public Object say3(WObject wObject)
     {

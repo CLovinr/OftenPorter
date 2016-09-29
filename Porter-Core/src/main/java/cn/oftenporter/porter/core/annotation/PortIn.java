@@ -8,7 +8,7 @@ import cn.oftenporter.porter.core.base.TiedType;
 import java.lang.annotation.*;
 
 /**
- * 用于标记输入接口。若标记在函数上，要求函数必须是public的;若标记在类上，则访问类型可以是任意类型。
+ * 用于标记输入接口。若标记在函数上，要求函数(静态或非静态)必须是public的;若标记在类上，则访问类型可以是任意类型。
  * <br>
  * Created by https://github.com/CLovinr on 2016/7/23.
  */

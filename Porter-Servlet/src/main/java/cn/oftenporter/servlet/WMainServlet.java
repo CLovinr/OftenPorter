@@ -1,6 +1,6 @@
 package cn.oftenporter.servlet;
 
-import cn.oftenporter.porter.core.PortExecutor;
+import cn.oftenporter.porter.core.PreRequest;
 import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * 用于servlet。
- * </p>
+ * 用于servlet,请求地址格式为:http://host[:port]/ServletContextPath[/=pname]/contextName/ClassTied/[funTied|restValue][?name1=value1
+ * &name2=value2...]
  * <pre>
  *     初始参数有：
  *     pname:框架实例名称，默认为"WMainServlet".
@@ -93,8 +93,7 @@ public class WMainServlet extends HttpServlet implements CommonMain
 
         WRequest wreq = new WServletRequest(request, method);
         WResponse wresp = new WServletResponse(response);
-
-        PortExecutor.Request req = porterMain.forRequest(wreq, wresp);
+        PreRequest req = porterMain.forRequest(wreq, wresp);
         if (req != null)
         {
             request.setCharacterEncoding(req.context.getContentEncoding());
@@ -127,7 +126,7 @@ public class WMainServlet extends HttpServlet implements CommonMain
             public void request(PRequest request, PCallback callback)
             {
                 LocalResponse resp = new LocalResponse(callback);
-                PortExecutor.Request req = porterMain.forRequest(request, resp);
+                PreRequest req = porterMain.forRequest(request, resp);
                 if (req != null)
                 {
                     porterMain.doRequest(req, request, resp);
