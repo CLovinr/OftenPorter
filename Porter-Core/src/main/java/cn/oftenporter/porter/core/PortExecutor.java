@@ -2,6 +2,7 @@ package cn.oftenporter.porter.core;
 
 import cn.oftenporter.porter.core.annotation.deal._PortIn;
 import cn.oftenporter.porter.core.annotation.sth.InObj;
+import cn.oftenporter.porter.core.annotation.sth.One;
 import cn.oftenporter.porter.core.annotation.sth.Porter;
 import cn.oftenporter.porter.core.annotation.sth.PorterOfFun;
 import cn.oftenporter.porter.core.base.*;
@@ -29,52 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PortExecutor
 {
 
-    public static class Context
-    {
-        public final PortContext portContext;
-        private CheckPassable[] contextChecks;
-        InnerContextBridge innerContextBridge;
-        Delivery delivery;
-        private ParamSourceHandleManager paramSourceHandleManager;
-        public final StateListener stateListenerForAll;
 
-        private boolean isEnable = true;
-        private String name, contentEncoding;
-
-        public Context(Delivery delivery, PortContext portContext, CheckPassable[] contextChecks,
-                ParamSourceHandleManager paramSourceHandleManager,
-                StateListener stateListenerForAll, InnerContextBridge innerContextBridge)
-        {
-            this.delivery = delivery;
-            this.portContext = portContext;
-            this.contextChecks = contextChecks;
-            this.paramSourceHandleManager = paramSourceHandleManager;
-            this.stateListenerForAll = stateListenerForAll;
-            this.innerContextBridge = innerContextBridge;
-            setEnable(true);
-        }
-
-
-        public String getContentEncoding()
-        {
-            return contentEncoding;
-        }
-
-        public String getName()
-        {
-            return name;
-        }
-
-        public void setEnable(boolean enable)
-        {
-            isEnable = enable;
-        }
-
-        public boolean isEnable()
-        {
-            return isEnable;
-        }
-    }
 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PortExecutor.class);
@@ -275,7 +231,7 @@ public class PortExecutor
 
 
         //类通过检测
-        rs = willPass(context, clazzPIn.getChecks(), wObject, CheckPassable.DuringType.CLASS);
+        rs = willPass(context, clazzPIn.getChecks(), wObject, DuringType.CLASS);
         if (rs != null)
         {
             exCheckPassable(wObject, rs, responseWhenException);
@@ -326,7 +282,7 @@ public class PortExecutor
 
 
         //函数通过检测
-        rs = willPass(context, funPIn.getChecks(), wObject, CheckPassable.DuringType.METHOD);
+        rs = willPass(context, funPIn.getChecks(), wObject, DuringType.METHOD);
         if (rs != null)
         {
             exCheckPassable(wObject, rs, responseWhenException);
@@ -372,7 +328,7 @@ public class PortExecutor
         {
             return null;
         }
-        InObj.One[] ones = inObj.ones;
+        One[] ones = inObj.ones;
         Object[] inObjects = new Object[ones.length];
         if (isInClass)
         {
@@ -383,7 +339,7 @@ public class PortExecutor
         }
         for (int i = 0; i < ones.length; i++)
         {
-            InObj.One one = ones[i];
+            One one = ones[i];
             Object object = PortUtil
                     .paramDealOne(context.innerContextBridge.paramDealt, one, paramSource, currentTypeParserStore);
             if (object instanceof ParamDealt.FailedReason)
@@ -404,7 +360,7 @@ public class PortExecutor
 
         for (int i = 0; i < allGlobal.length; i++)
         {
-            Object rs = allGlobal[i].willPass(wObject, CheckPassable.DuringType.GLOBAL);
+            Object rs = allGlobal[i].willPass(wObject, DuringType.GLOBAL);
             if (rs != null)
             {
                 return rs;
@@ -414,7 +370,7 @@ public class PortExecutor
         CheckPassable[] contextChecks = context.contextChecks;
         for (int i = 0; i < contextChecks.length; i++)
         {
-            Object rs = contextChecks[i].willPass(wObject, CheckPassable.DuringType.GLOBAL);
+            Object rs = contextChecks[i].willPass(wObject, DuringType.GLOBAL);
             if (rs != null)
             {
                 return rs;
@@ -427,7 +383,7 @@ public class PortExecutor
      * 通过检测
      */
     private Object willPass(Context context, Class<? extends CheckPassable>[] cps, WObject wObject,
-            CheckPassable.DuringType type)
+            DuringType type)
     {
         PortContext portContext = context.portContext;
         for (int i = 0; i < cps.length; i++)

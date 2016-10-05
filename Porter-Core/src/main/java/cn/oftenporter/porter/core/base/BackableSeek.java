@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
+import cn.oftenporter.porter.core.base.InNames.Name;
 
 /**
  * 非线程安全。
@@ -17,8 +18,8 @@ public class BackableSeek
     /**
      * <pre>
      *     Add:表示把name-typeId添加到{@linkplain BackableSeek}中。
-     *     Bind:表示找出{@linkplain InNames}中某个{@linkplain InNames.Name#typeParserId}为null的,
-     *     并将其typeParserId设置成{@linkplain BackableSeek}中与该{@linkplain InNames.Name#varName}对应的typeParserId(如果存在).
+     *     Bind:表示找出{@linkplain InNames}中某个{@linkplain Name#typeParserId}为null的,
+     *     并将其typeParserId设置成{@linkplain BackableSeek}中与该{@linkplain Name#varName}对应的typeParserId(如果存在).
      * </pre>
      */
     public enum SeekType
@@ -113,13 +114,13 @@ public class BackableSeek
     }
 
     /**
-     * 找出{@linkplain InNames.Name#typeParserId}为null的，并设置成本对象中存储的对应的typeParserId.
+     * 找出{@linkplain Name#typeParserId}为null的，并设置成本对象中存储的对应的typeParserId.
      *
      * @param inNames
      */
     public void bindTypeId2NameNull(InNames inNames)
     {
-        InNames.Name[] names = inNames.nece;
+        Name[] names = inNames.nece;
         for (int i = 0; i < names.length; i++)
         {
             if (names[i].typeParserId == null)
@@ -146,7 +147,7 @@ public class BackableSeek
      */
     public static void bindVarNameWithTypeId(InNames inNames, String varName, String typeId)
     {
-        InNames.Name[] names = inNames.nece;
+        Name[] names = inNames.nece;
         for (int i = 0; i < names.length; i++)
         {
             if (names[i].typeParserId == null && names[i].varName.equals(varName))

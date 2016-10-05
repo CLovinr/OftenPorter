@@ -203,6 +203,7 @@ public class DefaultPInit implements PInit
     {
         synchronized (LOCK)
         {
+            LOGGER.debug("link [{}]:{}:[{}]",currentPName(),direction,it.currentPName());
             boolean sendMyGoPath = false;
             boolean sendMeMore = false;
             boolean addIt = false;

@@ -7,10 +7,10 @@ import cn.oftenporter.porter.core.base.UrlDecoder;
  */
 public class PreRequest
 {
-    public PortExecutor.Context context;
+    public Context context;
     public UrlDecoder.Result result;
 
-    public PreRequest(PortExecutor.Context context, UrlDecoder.Result result)
+    public PreRequest(Context context, UrlDecoder.Result result)
     {
         this.context = context;
         this.result = result;

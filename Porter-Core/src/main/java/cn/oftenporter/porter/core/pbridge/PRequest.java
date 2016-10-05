@@ -6,6 +6,7 @@ import cn.oftenporter.porter.core.util.EnumerationImpl;
 
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/2.
@@ -26,7 +27,6 @@ public class PRequest implements WRequest, Cloneable
     {
         this(PortMethod.GET, requestPath);
     }
-
 
 
     public PRequest withNewPath(String newPath)
@@ -63,6 +63,12 @@ public class PRequest implements WRequest, Cloneable
         return method;
     }
 
+
+    public PRequest addParamAll(Map<String, Object> paramMap)
+    {
+        params.putAll(paramMap);
+        return this;
+    }
 
     public PRequest addParam(String name, Object value)
     {

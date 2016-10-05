@@ -3,7 +3,7 @@ package cn.oftenporter.porter.core.base;
 
 import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.annotation.PortInObj;
-import cn.oftenporter.porter.core.annotation.sth.InObj;
+import cn.oftenporter.porter.core.annotation.sth.One;
 import cn.oftenporter.porter.core.exception.InitException;
 import cn.oftenporter.porter.core.util.WPTool;
 import cn.oftenporter.porter.simple.DefaultFailedReason;
@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.regex.Pattern;
+import cn.oftenporter.porter.core.base.InNames.Name;
 
 /**
  * 接口处理的工具类。
@@ -140,7 +141,7 @@ public class PortUtil
 
     private static final Object[] EMPTY = new Object[0];
 
-    public static Object[] newArray(InNames.Name[] names)
+    public static Object[] newArray(Name[] names)
     {
         if (names.length == 0)
         {
@@ -157,7 +158,7 @@ public class PortUtil
      * 返回结果不为null。
      * 返回{@linkplain ParamDealt.FailedReason}表示失败，否则成功。
      */
-    public static Object paramDealOne(ParamDealt paramDealt, InObj.One one,
+    public static Object paramDealOne(ParamDealt paramDealt, One one,
             ParamSource paramSource,
             TypeParserStore currentTypeParserStore)
     {

@@ -22,6 +22,37 @@ public interface ITypeParser
      */
     String id();
 
+
+    /**
+     * 用于分解参数。
+     * <pre>
+     *     假如：dec=obj
+     *     obj为分解类型：1）若obj中含有名为dec的值val，则最终dec=val；。
+     * </pre>
+     * 返回的值会被统一放到一个临时Map中，以后在获取参数值时，优先从该map中获取,并且从它中获取的参数无法再被转换。
+     */
+    public class DecodeParams
+    {
+
+        private Map<String, Object> params = new HashMap<>();
+
+        public DecodeParams()
+        {
+
+        }
+
+        public Map<String, Object> getParams()
+        {
+            return params;
+        }
+
+        public DecodeParams put(String name, Object value)
+        {
+            params.put(name, value);
+            return this;
+        }
+    }
+
     public class ParseResult
     {
 
@@ -41,7 +72,7 @@ public interface ITypeParser
         /**
          * 转换合法
          *
-         * @param value 结果值,可以为{@link DecodeParams}类型。
+         * @param value 结果值,可以为{@link ITypeParser.DecodeParams}类型。
          */
         public ParseResult(@NotNull Object value)
         {
@@ -105,36 +136,6 @@ public interface ITypeParser
         public Object getValue()
         {
             return value;
-        }
-    }
-
-    /**
-     * 用于分解参数。
-     * <pre>
-     *     假如：dec=obj
-     *     obj为分解类型：1）若obj中含有名为dec的值val，则最终dec=val；。
-     * </pre>
-     * 返回的值会被统一放到一个临时Map中，以后在获取参数值时，优先从该map中获取,并且从它中获取的参数无法再被转换。
-     */
-    public static class DecodeParams
-    {
-
-        private Map<String, Object> params = new HashMap<>();
-
-        public DecodeParams()
-        {
-
-        }
-
-        public Map<String, Object> getParams()
-        {
-            return params;
-        }
-
-        public DecodeParams put(String name, Object value)
-        {
-            params.put(name, value);
-            return this;
         }
     }
 }

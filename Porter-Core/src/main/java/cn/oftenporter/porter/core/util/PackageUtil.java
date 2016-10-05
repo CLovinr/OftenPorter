@@ -306,9 +306,8 @@ public class PackageUtil
         List<String> myClassName = new ArrayList<String>();
         if (urls != null)
         {
-            for (int i = 0; i < urls.length; i++)
+            for (URL url : urls)
             {
-                URL url = urls[i];
                 String urlPath = url.getPath();
                 // 不必搜索classes文件夹
                 if (urlPath.endsWith("classes" + File.separator))

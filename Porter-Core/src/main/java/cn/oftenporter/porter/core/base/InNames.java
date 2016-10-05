@@ -23,7 +23,6 @@ public class InNames
             this.typeParserId = typeParserId;
         }
     }
-
     /**
      * 必需参数的名称
      */

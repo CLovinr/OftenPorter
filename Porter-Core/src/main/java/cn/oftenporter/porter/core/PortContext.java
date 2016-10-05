@@ -2,7 +2,6 @@ package cn.oftenporter.porter.core;
 
 
 import cn.oftenporter.porter.core.annotation.NotNull;
-import cn.oftenporter.porter.core.annotation.PortIn;
 import cn.oftenporter.porter.core.annotation.deal._PortDestroy;
 import cn.oftenporter.porter.core.annotation.deal._PortIn;
 import cn.oftenporter.porter.core.annotation.deal._PortStart;
@@ -79,7 +78,7 @@ public class PortContext
             LOGGER.debug("may add porter:{}:{}", object.getClass(), object);
             try
             {
-                if (object.getClass().isAnnotationPresent(PortIn.class))
+                if (PortUtil.isPortClass(object.getClass()))
                 {
                     addPorter(object.getClass(), object, innerContextBridge, sthDeal);
                 }
@@ -115,7 +114,7 @@ public class PortContext
     private void seekPackage(String packageStr, InnerContextBridge innerContextBridge, SthDeal sthDeal)
     {
         LOGGER.debug("扫描包：{}", packageStr);
-        List<String> classeses = PackageUtil.getClassName(packageStr,classLoader);
+        List<String> classeses = PackageUtil.getClassName(packageStr, classLoader);
         for (int i = 0; i < classeses.size(); i++)
         {
             try

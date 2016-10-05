@@ -25,34 +25,46 @@ public class SeekPackages
     /**
      * 添加扫描的接口类。
      *
-     * @param clazz 待扫描的类
+     * @param clazzes 待扫描的类
      * @return
      * @throws NullPointerException clazz为null。
      */
-    public SeekPackages addClassPorter(Class<?> clazz) throws NullPointerException
+    public SeekPackages addClassPorter(Class<?>... clazzes) throws NullPointerException
     {
-        if (clazz == null)
+        int i = 0;
+        for (Class<?> clazz : clazzes)
         {
-            throw new NullPointerException();
+            if (clazz == null)
+            {
+                throw new NullPointerException("null element at index " + i);
+            }
+            classesForSeek.add(clazz);
+            i++;
         }
-        classesForSeek.add(clazz);
+
         return this;
     }
 
     /**
      * 添加扫描的接口对象。
      *
-     * @param object 待扫描的类
+     * @param objects 待扫描的类
      * @return
      * @throws NullPointerException object为null。
      */
-    public SeekPackages addObjectPorter(Object object) throws NullPointerException
+    public SeekPackages addObjectPorter(Object... objects) throws NullPointerException
     {
-        if (object == null)
+        for (int i = 0; i < objects.length; i++)
         {
-            throw new NullPointerException();
+            Object object = objects[i];
+            if (object == null)
+            {
+                throw new NullPointerException("null element at index " + i);
+            }
+            objectsForSeek.add(object);
+
         }
-        objectsForSeek.add(object);
+
         return this;
     }
 
@@ -85,6 +97,7 @@ public class SeekPackages
 
     /**
      * 添加包。
+     *
      * @param packages 存放的是字符串
      * @return
      */

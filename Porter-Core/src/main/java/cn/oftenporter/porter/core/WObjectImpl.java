@@ -17,9 +17,9 @@ class WObjectImpl extends WObject
     private UrlDecoder.Result result;
     Object[] finObjs, cinObjs;
 
-    private PortExecutor.Context context;
+    private Context context;
 
-    WObjectImpl(UrlDecoder.Result result, WRequest request, WResponse response, PortExecutor.Context context)
+    WObjectImpl(UrlDecoder.Result result, WRequest request, WResponse response, Context context)
     {
         this.result = result;
         this.request = request;

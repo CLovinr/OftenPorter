@@ -9,6 +9,7 @@ import cn.oftenporter.porter.core.pbridge.PCallback;
 import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.core.pbridge.PRequest;
 import cn.oftenporter.porter.core.pbridge.PResponse;
+import cn.oftenporter.porter.core.util.LogUtil;
 import cn.oftenporter.porter.local.LocalMain;
 
 public class Main1
@@ -25,6 +26,7 @@ public class Main1
 	final Logger logger = LoggerFactory.getLogger(Main1.class);
 
 	LocalMain localMain = new LocalMain(true,new PName("P1"),"utf-8");
+	LogUtil.printPosLn(PortMethod.valueOf("GET"));
 
 	// 进行配置
 	PorterConf conf = localMain.newPorterConf();

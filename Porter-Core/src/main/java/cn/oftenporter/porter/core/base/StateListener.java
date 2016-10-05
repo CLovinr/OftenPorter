@@ -22,13 +22,18 @@ public interface StateListener
 
     void afterDestroy();
 
+
+    /**
+     * @author Created by https://github.com/CLovinr on 2016/10/3.
+     */
     public class Adapter implements StateListener
     {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(Adapter.class);
 
         @Override
-        public void beforeSeek(InitParamSource initParamSource,PorterConf porterConf, ParamSourceHandleManager paramSourceHandleManager)
+        public void beforeSeek(InitParamSource initParamSource, PorterConf porterConf,
+                ParamSourceHandleManager paramSourceHandleManager)
         {
             LOGGER.debug("beforeSeek");
         }
@@ -57,4 +62,5 @@ public interface StateListener
             LOGGER.debug("afterDestroy");
         }
     }
+
 }

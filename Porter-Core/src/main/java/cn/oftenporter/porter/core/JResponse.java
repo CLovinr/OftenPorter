@@ -196,6 +196,11 @@ public class JResponse
         return result;
     }
 
+    public boolean isSuccess()
+    {
+        return code == ResultCode.SUCCESS;
+    }
+
     /**
      * 转换为字符串
      */

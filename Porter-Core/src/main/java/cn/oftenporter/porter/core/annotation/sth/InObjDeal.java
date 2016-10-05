@@ -17,6 +17,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
+import cn.oftenporter.porter.core.base.InNames.Name;
+
 /**
  * 处理对象绑定。
  *
@@ -50,14 +52,14 @@ public class InObjDeal
 
     static InObj dealPortInObj(_PortInObj portInObj, InnerContextBridge innerContextBridge) throws Exception
     {
-        CacheOne.CacheTool cacheTool = innerContextBridge.innerBridge.cacheTool;
+        CacheTool cacheTool = innerContextBridge.innerBridge.cacheTool;
         InObj inObj = null;
 
         if (portInObj != null)
         {
 
             Class<?>[] types = portInObj.getValue();
-            InObj.One[] ones = new InObj.One[types.length];
+            One[] ones = new One[types.length];
             for (int i = 0; i < types.length; i++)
             {
                 ones[i] = bindOne(types[i], innerContextBridge);
@@ -69,10 +71,10 @@ public class InObjDeal
     }
 
 
-    static InObj.One bindOne(Class<?> clazz, InnerContextBridge innerContextBridge) throws Exception
+    static One bindOne(Class<?> clazz, InnerContextBridge innerContextBridge) throws Exception
     {
 
-        InObj.One one;
+        One one;
         if (Modifier.isInterface(clazz.getModifiers()))
         {
             if (clazz.isAnnotationPresent(AutoGen.class))
@@ -118,9 +120,9 @@ public class InObjDeal
 
         Field[] fields = WPTool.getAllFields(clazz);
         List<Field> neces = new ArrayList<>();
-        List<InNames.Name> neceNames = new ArrayList<>();
+        List<Name> neceNames = new ArrayList<>();
         List<Field> unneces = new ArrayList<>();
-        List<InNames.Name> unneceNames = new ArrayList<>();
+        List<Name> unneceNames = new ArrayList<>();
 
         AnnotationDealt annotationDealt = innerContextBridge.annotationDealt;
         TypeParserStore typeParserStore = innerContextBridge.innerBridge.globalParserStore;
@@ -128,9 +130,9 @@ public class InObjDeal
         for (int i = 0; i < fields.length; i++)
         {
             Field field = fields[i];
-            InNames.Name name;
+            Name name;
             field.setAccessible(true);
-            List<InNames.Name> nameList = null;
+            List<Name> nameList = null;
             List<Field> fieldList = null;
             String nameStr = null;
             _Nece nece = annotationDealt.nece(field);
@@ -149,7 +151,7 @@ public class InObjDeal
 
             if (nameList != null)
             {
-                name = new InNames.Name(nameStr, null);
+                name = new Name(nameStr, null);
                 _parse parse = annotationDealt.parse(field);
                 if (parse != null)
                 {
@@ -167,7 +169,7 @@ public class InObjDeal
                         typeParser = ParserUtil.getTypeParser(field.getType());
                         LOGGER.debug("auto get:[{}]", typeParser);
                         String typeId = SthUtil.putTypeParser(typeParser, typeParserStore);
-                        name = new InNames.Name(nameStr, typeId);
+                        name = new Name(nameStr, typeId);
                     } catch (ClassNotFoundException e)
                     {
                         LOGGER.error("auto get {} for field '{}' failed!", ITypeParser.class.getSimpleName(), field);
@@ -180,8 +182,8 @@ public class InObjDeal
             }
 
         }
-        one = new InObj.One(clazz,
-                new InNames(neceNames.toArray(new InNames.Name[0]), unneceNames.toArray(new InNames.Name[0]), null),
+        one = new One(clazz,
+                new InNames(neceNames.toArray(new Name[0]), unneceNames.toArray(new Name[0]), null),
                 neces.toArray(new Field[0]), unneces.toArray(new Field[0]));
 
 

@@ -56,31 +56,10 @@ class SourceGenerator implements Closeable
 
 
     private Writer _writer;
-    StringBuilder stringBuilder = new StringBuilder();
 
     public SourceGenerator()
     {
-        _writer = new Writer()
-        {
 
-            @Override
-            public void write(char[] cbuf, int off, int len) throws IOException
-            {
-                stringBuilder.append(cbuf, off, len);
-            }
-
-            @Override
-            public void flush() throws IOException
-            {
-
-            }
-
-            @Override
-            public void close() throws IOException
-            {
-
-            }
-        };
     }
 
     public SourceGenerator append(char c) throws IOException
@@ -187,11 +166,10 @@ class SourceGenerator implements Closeable
         return this;
     }
 
-    private Writer writer_;
 
     public void setWriter(Writer writer)
     {
-        this.writer_ = writer;
+        this._writer = writer;
     }
 
     public void write() throws IOException
@@ -315,20 +293,7 @@ class SourceGenerator implements Closeable
     @Override
     public void close() throws IOException
     {
-        try
-        {
-            writer_.append(stringBuilder);
-        } finally
-        {
-            writer_.close();
-        }
-
-
+        _writer.close();
     }
 
-    @Override
-    public String toString()
-    {
-        return stringBuilder.toString();
-    }
 }

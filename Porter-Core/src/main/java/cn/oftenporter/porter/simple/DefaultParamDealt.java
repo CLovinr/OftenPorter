@@ -4,6 +4,7 @@ import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.util.WPTool;
 
 import java.util.Map;
+import cn.oftenporter.porter.core.base.InNames.Name;
 
 /**
  * 默认的参数处理实现。
@@ -12,12 +13,12 @@ import java.util.Map;
 public class DefaultParamDealt implements ParamDealt
 {
     @Override
-    public FailedReason deal(InNames.Name[] names, Object[] values, boolean isNecessary, ParamSource paramSource,
+    public FailedReason deal(Name[] names, Object[] values, boolean isNecessary, ParamSource paramSource,
             TypeParserStore typeParserStore)
     {
         for (int i = 0; i < names.length; i++)
         {
-            InNames.Name name = names[i];
+            Name name = names[i];
             Object value = getParam(name.varName, paramSource, typeParserStore.byId(name.typeParserId));
             if (value != null)
             {

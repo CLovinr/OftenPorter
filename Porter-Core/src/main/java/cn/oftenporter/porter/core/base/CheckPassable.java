@@ -6,21 +6,7 @@ package cn.oftenporter.porter.core.base;
  */
 public interface CheckPassable
 {
-    public enum DuringType
-    {
-        /**
-         * 没有初始化任何参数。
-         */
-        GLOBAL,
-        /**
-         * 类参数已经准备完成。
-         */
-        CLASS,
-        /**
-         * 函数参数已经准备完成。
-         */
-        METHOD
-    }
+
 
     /**
      * 返回null表示通过。

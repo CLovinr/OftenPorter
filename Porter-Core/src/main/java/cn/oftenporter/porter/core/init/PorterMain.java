@@ -146,10 +146,10 @@ public class PorterMain
     {
         checkInit();
         LOGGER.debug("destroyAll...");
-        Iterator<PortExecutor.Context> iterator = portExecutor.contextIterator();
+        Iterator<Context> iterator = portExecutor.contextIterator();
         while (iterator.hasNext())
         {
-            PortExecutor.Context context = iterator.next();
+            Context context = iterator.next();
             context.setEnable(false);
             destroyOne(context);
         }
@@ -157,7 +157,7 @@ public class PorterMain
         LOGGER.debug("destroyAll end!");
     }
 
-    private void destroyOne(PortExecutor.Context context)
+    private void destroyOne(Context context)
     {
         checkInit();
         if (context != null && context.stateListenerForAll != null)
@@ -175,7 +175,7 @@ public class PorterMain
     public synchronized void destroyOne(String contextName)
     {
         checkInit();
-        PortExecutor.Context context = portExecutor.removeContext(contextName);
+        Context context = portExecutor.removeContext(contextName);
         destroyOne(context);
     }
 

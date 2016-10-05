@@ -11,11 +11,12 @@ public class PName
 
     public PName(String name)
     {
-        PortUtil.checkName(name);
         if (name == null)
         {
             throw new NullPointerException();
         }
+        PortUtil.checkName(name);
+
         this.name = name;
     }
 

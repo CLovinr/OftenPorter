@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.oftenporter.porter.core.base.CheckPassable;
+import cn.oftenporter.porter.core.base.DuringType;
 import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.pbridge.PCallback;

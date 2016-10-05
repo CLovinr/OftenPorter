@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by https://github.com/CLovinr on 2016/9/8.
  */
-//@SupportedAnnotationTypes({"cn.oftenporter.porter.core.apt.AutoGen"})
+@SupportedAnnotationTypes({"cn.oftenporter.porter.core.apt.AutoGen"})
 public class PorterProcessor extends AbstractProcessor
 {
     public static final String SUFFIX = "AP";
@@ -81,12 +81,15 @@ public class PorterProcessor extends AbstractProcessor
                 }
             }
             String name = element.getQualifiedName() + SUFFIX;
-            sourceGenerator.append("//" + new Date() + "\n");
-            sourceGenerator.write();
+
             //创建java源文件
             Filer filer = processingEnv.getFiler();
-            sourceGenerator.setWriter(filer.createSourceFile(name).openWriter());
+            sourceGenerator.setWriter(filer.createSourceFile(name,element).openWriter());
             closeable = sourceGenerator;
+
+            sourceGenerator.append("/*" + new Date() + "*/\n");
+            sourceGenerator.write();
+
         } catch (Throwable e)
         {
             err("ex:create source file failed!\n" + e.toString(), element);
@@ -131,8 +134,7 @@ public class PorterProcessor extends AbstractProcessor
                 set.add(TypeElement.class.cast(element));
             } else
             {
-                processingEnv.getMessager()
-                        .printMessage(Diagnostic.Kind.WARNING, "just for interface!(current:" + element + ")", element);
+                err("just for interface!(current:" + element + ")", element);
             }
         }
         return set;

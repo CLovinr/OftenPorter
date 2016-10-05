@@ -21,12 +21,10 @@ import java.util.Random;
 })
 @PortIn(value = "Hello", tiedType = TiedType.REST)
 @PortInObj({User.class})
-public class HelloPorter
+public class HelloPorter extends SuperSetPorter
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(HelloPorter.class);
 
-    @AutoSet
-    private AutoSetObj autoSetObj;
 
     @AutoSet
     private static AutoSetObj autoSetObj2;
