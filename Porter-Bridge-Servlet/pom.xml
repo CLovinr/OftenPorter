@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cn.oftenporter</groupId>
-    <artifactId>Porter-Servlet</artifactId>
-    <version>1.0.0.1</version>
+    <artifactId>Porter-Bridge-Servlet</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>Porter-Servlet</name>
+    <name>Porter-Bridge-Servlet</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>cn.oftenporter</groupId>
             <artifactId>Porter-Core</artifactId>
-            <version>1.0.0.1</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
