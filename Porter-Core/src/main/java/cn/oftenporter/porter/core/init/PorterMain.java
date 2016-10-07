@@ -145,7 +145,7 @@ public class PorterMain
     public synchronized void destroyAll()
     {
         checkInit();
-        LOGGER.debug("destroyAll...");
+        LOGGER.debug("[{}] destroyAll...",getPInit().currentPName());
         Iterator<Context> iterator = portExecutor.contextIterator();
         while (iterator.hasNext())
         {
@@ -154,7 +154,7 @@ public class PorterMain
             destroyOne(context);
         }
         portExecutor.clear();
-        LOGGER.debug("destroyAll end!");
+        LOGGER.debug("[{}] destroyAll end!",getPInit().currentPName());
     }
 
     private void destroyOne(Context context)
@@ -164,10 +164,10 @@ public class PorterMain
         {
             String contextName = context.getName();
             StateListener stateListenerForAll = context.stateListenerForAll;
-            LOGGER.debug("{} beforeDestroy...", contextName);
+            LOGGER.debug("Context [{}] beforeDestroy...", contextName);
             stateListenerForAll.beforeDestroy();
             context.portContext.destroy();
-            LOGGER.debug("{} destroyed!", contextName);
+            LOGGER.debug("Context [{}] destroyed!", contextName);
             stateListenerForAll.afterDestroy();
         }
     }

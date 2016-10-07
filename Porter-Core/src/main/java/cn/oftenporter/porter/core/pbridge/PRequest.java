@@ -1,5 +1,6 @@
 package cn.oftenporter.porter.core.pbridge;
 
+import cn.oftenporter.porter.core.base.AppValues;
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.WRequest;
 import cn.oftenporter.porter.core.util.EnumerationImpl;
@@ -63,6 +64,16 @@ public class PRequest implements WRequest, Cloneable
         return method;
     }
 
+    public PRequest addParamAll(AppValues appValues)
+    {
+        String[] names = appValues.getNames();
+        Object[] values = appValues.getValues();
+        for (int i = 0; i < names.length; i++)
+        {
+            params.put(names[i], values[i]);
+        }
+        return this;
+    }
 
     public PRequest addParamAll(Map<String, Object> paramMap)
     {

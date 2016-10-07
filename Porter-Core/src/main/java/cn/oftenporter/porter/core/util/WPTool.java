@@ -61,17 +61,28 @@ public class WPTool
         return isAssignable(obj.getClass(), clazz);
     }
 
-//    /**
-//     * 判断c1是否是c2的直接或间接子类.
-//     *
-//     * @param c1
-//     * @param c2
-//     * @return
-//     */
-//    public static boolean isSubclassOf(Class<?> c1, Class<?> c2)
-//    {
-//        return subclassOf(c1, c2) > 0;
-//    }
+    /**
+     * 返回c1是c2的第几代子类。
+     * -1表示不是子类，0表示是本身，1表示是第一代子类...
+     *
+     * @param c1 若为null,则会返回-1
+     * @param c2
+     * @return
+     */
+    public static int subclassOf(Class<?> c1, Class<?> c2)
+    {
+        if (c1 == null)
+        {
+            return -1;
+        } else if (c1.getName().equals(c2.getName()))
+        {
+            return 0;
+        } else
+        {
+            int n = subclassOf(c1.getSuperclass(), c2);
+            return n == -1 ? -1 : n + 1;
+        }
+    }
 
 
     /**
@@ -101,7 +112,7 @@ public class WPTool
                 ps.close();
             } catch (SQLException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
@@ -158,31 +169,35 @@ public class WPTool
                 closeable.close();
             } catch (Exception e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
 
-    public static void close(Connection connection){
-        if(connection!=null){
+    public static void close(Connection connection)
+    {
+        if (connection != null)
+        {
             try
             {
                 connection.close();
             } catch (SQLException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
 
-    public static void close(Statement statement){
-        if(statement!=null){
+    public static void close(Statement statement)
+    {
+        if (statement != null)
+        {
             try
             {
                 statement.close();
             } catch (SQLException e)
             {
-                LOGGER.error(e.getMessage(),e);
+                LOGGER.error(e.getMessage(), e);
             }
         }
     }
