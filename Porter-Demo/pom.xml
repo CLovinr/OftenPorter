@@ -10,13 +10,13 @@
 
 
 	<properties>
-		<often-porter-version>1.0.0.1</often-porter-version>
+		<often-porter-version>1.0.0</often-porter-version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>cn.oftenporter</groupId>
-			<artifactId>Porter-Servlet</artifactId>
+			<artifactId>Porter-Bridge-Servlet</artifactId>
 			<version>${often-porter-version}</version>
 		</dependency>
 		<dependency>
