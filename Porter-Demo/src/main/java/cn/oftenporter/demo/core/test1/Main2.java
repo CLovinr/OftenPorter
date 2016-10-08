@@ -23,7 +23,7 @@ public class Main2
 
 	final Logger logger = LoggerFactory.getLogger(Main1.class);
 
-	LocalMain localMain = new LocalMain(true,new PName("P1"),"utf-8");
+	LocalMain localMain = new LocalMain(true, new PName("P1"), "utf-8");
 
 	// 进行配置
 	PorterConf conf = localMain.newPorterConf();
@@ -31,14 +31,14 @@ public class Main2
 	conf.setContextName("Test1-2Main");
 	// 添加接口类
 	conf.getSeekPackages().addClassPorter(Hello5Porter.class);
-	//设置全局检测
+	// 设置全局检测
 	conf.addContextCheck(new GlobalCheckPassable());
 
 	localMain.startOne(conf);
 	logger.debug("****************************************************");
 
-	localMain.getBridge().request(new PRequest("/Test1-2Main/Hello5/say"),
-		new PCallback()
+	localMain.getPInit().currentBridge().request(
+		new PRequest("/Test1-2Main/Hello5/say"), new PCallback()
 		{
 
 		    @Override

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.PBridge;
 import cn.oftenporter.porter.core.pbridge.PCallback;
 import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.core.pbridge.PRequest;
@@ -21,7 +22,7 @@ public class Main1
 	 */
 	final Logger logger = LoggerFactory.getLogger(Main1.class);
 
-	LocalMain localMain = new LocalMain(true,new PName("P1"), "utf-8");
+	LocalMain localMain = new LocalMain(true, new PName("P1"), "utf-8");
 
 	// 进行配置
 	PorterConf conf = localMain.newPorterConf();
@@ -29,9 +30,10 @@ public class Main1
 	conf.getSeekPackages()
 		.addPorters(Main1.class.getPackage().getName() + ".porter");
 
+	PBridge bridge = localMain.getPInit().currentBridge();
 	localMain.startOne(conf);
 	logger.debug("****************************************************");
-	localMain.getBridge().request(
+	bridge.request(
 		new PRequest("/Test2Main/Hello1/say").addParam("name", "火星人"),
 		new PCallback()
 		{
@@ -43,7 +45,7 @@ public class Main1
 		    }
 		});
 
-	localMain.getBridge().request(
+	bridge.request(
 		new PRequest("/Test2Main/Hello1/say2").addParam("name", "火星人"),
 		new PCallback()
 		{

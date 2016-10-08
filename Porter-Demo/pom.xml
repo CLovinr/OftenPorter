@@ -16,7 +16,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>cn.oftenporter</groupId>
-			<artifactId>Porter-Bridge-Servlet</artifactId>
+			<artifactId>Porter-Bridge-Http</artifactId>
 			<version>${often-porter-version}</version>
 		</dependency>
 		<dependency>

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.PBridge;
 import cn.oftenporter.porter.core.pbridge.PCallback;
 import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.core.pbridge.PRequest;
@@ -25,7 +26,7 @@ public class Main1
 
 	final Logger logger = LoggerFactory.getLogger(Main1.class);
 
-	LocalMain localMain = new LocalMain(true,new PName("P1"),"utf-8");
+	LocalMain localMain = new LocalMain(true, new PName("P1"), "utf-8");
 	LogUtil.printPosLn(PortMethod.valueOf("GET"));
 
 	// 进行配置
@@ -42,8 +43,10 @@ public class Main1
 	localMain.startOne(conf);
 	logger.debug("****************************************************");
 
-	localMain.getBridge().request(
-		new PRequest("/Test1Main/Hello1/say").addParam("name", "The Earth").addParam("sth", "class-param"),
+	PBridge bridge = localMain.getPInit().currentBridge();
+
+	bridge.request(new PRequest("/Test1Main/Hello1/say")
+		.addParam("name", "The Earth").addParam("sth", "class-param"),
 		new PCallback()
 		{
 
@@ -54,22 +57,9 @@ public class Main1
 		    }
 		});
 
-	localMain.getBridge()
-		.request(new PRequest("/Test1Main/Hello2/say").setMethod(PortMethod.POST)
+	bridge.request(
+		new PRequest("/Test1Main/Hello2/say").setMethod(PortMethod.POST)
 			.addParam("name", "The Moon").addParam("msg", "beauty"),
-			new PCallback()
-			{
-
-			    @Override
-			    public void onResponse(PResponse lResponse)
-			    {
-				logger.debug(String.valueOf(lResponse.getResponse()));
-			    }
-			});
-
-	localMain.getBridge().request(
-		new PRequest("/Test1Main/Hello3REST/123456").setMethod(PortMethod.POST)
-			.addParam("name", "The Sun").addParam("msg", "beauty"),
 		new PCallback()
 		{
 
@@ -80,7 +70,19 @@ public class Main1
 		    }
 		});
 
-	localMain.getBridge().request(new PRequest("/Test1Main/Hello4REST/abcdef")
+	bridge.request(new PRequest("/Test1Main/Hello3REST/123456")
+		.setMethod(PortMethod.POST).addParam("name", "The Sun")
+		.addParam("msg", "beauty"), new PCallback()
+		{
+
+		    @Override
+		    public void onResponse(PResponse lResponse)
+		    {
+			logger.debug(String.valueOf(lResponse.getResponse()));
+		    }
+		});
+
+	bridge.request(new PRequest("/Test1Main/Hello4REST/abcdef")
 		.setMethod(PortMethod.POST).addParam("name", "The Mars"),
 		new PCallback()
 		{
@@ -91,8 +93,9 @@ public class Main1
 			logger.debug(String.valueOf(lResponse.getResponse()));
 		    }
 		});
-	localMain.getBridge().request(
-		new PRequest("/Test1Main/Hello4REST/add").addParam("content", "!!!!").setMethod(PortMethod.POST),
+	bridge.request(
+		new PRequest("/Test1Main/Hello4REST/add")
+			.addParam("content", "!!!!").setMethod(PortMethod.POST),
 		new PCallback()
 		{
 

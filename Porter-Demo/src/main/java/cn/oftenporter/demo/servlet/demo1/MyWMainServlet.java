@@ -8,6 +8,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.oftenporter.demo.bridge.http.MyHServerServlet;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.DuringType;
 import cn.oftenporter.porter.core.base.WObject;
@@ -28,11 +29,10 @@ import cn.oftenporter.servlet.WMainServlet;
  *         2016年9月6日 下午11:55:04
  *
  */
-@WebServlet(name = "PorterServlet", urlPatterns = "/*",
-	loadOnStartup = 10,
-	initParams = { @WebInitParam(name = "pname", value = "Servlet1")
-	// @WebInitParam(name = "urlEncoding", value = "utf-8")
-	})
+@WebServlet(name = "PorterServlet", urlPatterns = "/S/*", loadOnStartup = 5,
+	initParams = { @WebInitParam(name = "pname", value = "Servlet1"),
+		// @WebInitParam(name = "urlEncoding", value = "utf-8"),
+		@WebInitParam(name = "urlPatternPrefix", value = "/S") })
 public class MyWMainServlet extends WMainServlet
 {
     private static final long serialVersionUID = 1L;
@@ -64,7 +64,7 @@ public class MyWMainServlet extends WMainServlet
 	});
 
 	porterConf.getSeekPackages()
-		.addPorters(getClass().getPackage().getName()+".porter");
+		.addPorters(getClass().getPackage().getName() + ".porter");
 	porterConf.setContextName("T1");
 
 	startOne(porterConf);
@@ -79,6 +79,7 @@ public class MyWMainServlet extends WMainServlet
 	localMain.startOne(porterConf2);
 
 	localMain.getPInit().link(servletInit, Direction.BothAll);
+	MyHServerServlet.delivery = getPInit();
 
 	PRequest request = new PRequest(":Servlet1/T1/Hello/say")
 		.addParam("name", "xiaoming").addParam("age", 15)

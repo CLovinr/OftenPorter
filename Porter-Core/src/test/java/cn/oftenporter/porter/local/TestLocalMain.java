@@ -116,7 +116,7 @@ public class TestLocalMain
 
         //多线程下测试
         // final long time = System.nanoTime();
-        exe(executorService, n, localMain.getBridge(), new Listener()
+        exe(executorService, n, localMain.getPInit().currentBridge(), new Listener()
         {
             @Override
             public void onEnd(long totalDtime, int N)
@@ -128,7 +128,7 @@ public class TestLocalMain
                 logger.debug("**************************************");
 
                 logger.debug("**************AutoSet delay test******************");
-                localMain.getBridge().request(new PRequest("/Local-1/Delay/test"), new PCallback()
+                localMain.getPInit().currentBridge().request(new PRequest("/Local-1/Delay/test"), new PCallback()
                 {
                     @Override
                     public void onResponse(PResponse lResponse)

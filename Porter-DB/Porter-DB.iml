@@ -14,7 +14,7 @@
     <orderEntry type="library" scope="PROVIDED" name="Maven: com.google.android:android:5.1" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.mongodb:mongo-java-driver:2.12.4" level="project" />
     <orderEntry type="module" module-name="Porter-Core" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
     <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.16" level="project" />
+    <orderEntry type="library" name="Maven: org.slf4j:slf4j-api:1.7.21" level="project" />
   </component>
 </module>

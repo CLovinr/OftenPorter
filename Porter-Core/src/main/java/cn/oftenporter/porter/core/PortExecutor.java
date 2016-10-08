@@ -31,8 +31,6 @@ public class PortExecutor
 {
 
 
-
-
     private static final Logger LOGGER = LoggerFactory.getLogger(PortExecutor.class);
     private Map<String, Context> contextMap = new ConcurrentHashMap<>();
 
@@ -131,29 +129,29 @@ public class PortExecutor
     public PreRequest forRequest(WRequest request, final WResponse response, PInit pInit)
     {
         String path = request.getPath();
-        if (path.startsWith("/="))
-        {
-
-            pInit.toAllBridge().request(new PRequestWrap(request, ':' + path.substring(2)), new PCallback()
-            {
-                @Override
-                public void onResponse(PResponse lResponse)
-                {
-                    try
-                    {
-                        response.write(lResponse.getResponse());
-                    } catch (IOException e)
-                    {
-                        LOGGER.error(e.getMessage(), e);
-                    } finally
-                    {
-                        WPTool.close(response);
-                    }
-                }
-            });
-
-            return null;
-        }
+//        if (path.startsWith("/="))
+//        {
+//
+//            pInit.toAllBridge().request(new PRequestWrap(request, ':' + path.substring(2)), new PCallback()
+//            {
+//                @Override
+//                public void onResponse(PResponse lResponse)
+//                {
+//                    try
+//                    {
+//                        response.write(lResponse.getResponse());
+//                    } catch (IOException e)
+//                    {
+//                        LOGGER.error(e.getMessage(), e);
+//                    } finally
+//                    {
+//                        WPTool.close(response);
+//                    }
+//                }
+//            });
+//
+//            return null;
+//        }
         UrlDecoder.Result result = urlDecoder.decode(path);
         Context context;
         if (result == null || (context = contextMap.get(result.contextName())) == null || !context.isEnable)

@@ -1,5 +1,3 @@
 <factorypath>
     <factorypathentry kind="PLUGIN" id="org.eclipse.jst.ws.annotations.core" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="H:\Win10Moved\Users\宇宙之灵\.m2\repository\cn\oftenporter\Porter-Core\1.0.0.1\Porter-Core-1.0.0.1.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="EXTJAR" id="H:\Win10Moved\Users\宇宙之灵\.m2\repository\org\inferred\freebuilder\1.6\freebuilder-1.6.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

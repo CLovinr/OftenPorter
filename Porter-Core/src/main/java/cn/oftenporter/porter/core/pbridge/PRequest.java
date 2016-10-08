@@ -14,14 +14,25 @@ import java.util.Map;
  */
 public class PRequest implements WRequest, Cloneable
 {
-    private String requestPath;
-    private PortMethod method;
+    protected String requestPath;
+    protected PortMethod method;
     private HashMap<String, Object> params = new HashMap<String, Object>();
 
     public PRequest(PortMethod method, String requestPath)
     {
         this.method = method;
         this.requestPath = requestPath;
+    }
+
+    public PRequest(WRequest request, String requestPath)
+    {
+        this(request.getMethod(), requestPath);
+        Enumeration<String> e = request.getParameterNames();
+        while (e.hasMoreElements())
+        {
+            String name = e.nextElement();
+            addParam(name, request.getParameter(name));
+        }
     }
 
     public PRequest(String requestPath)
@@ -97,5 +108,10 @@ public class PRequest implements WRequest, Cloneable
     {
         this.method = method;
         return this;
+    }
+
+    public HashMap<String, Object> getParams()
+    {
+        return params;
     }
 }

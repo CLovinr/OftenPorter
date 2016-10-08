@@ -55,7 +55,14 @@ public class DefaultUrlDecoder implements UrlDecoder
         } else
         {
             classTied = tiedPath.substring(1, forwardSlash);
-            funTied = tiedPath.substring(forwardSlash + 1);
+            try
+            {
+                funTied = URLDecoder.decode(tiedPath.substring(forwardSlash + 1), encoding);
+            } catch (UnsupportedEncodingException e)
+            {
+                LOGGER.error(e.getMessage(), e);
+                return null;
+            }
         }
 
 

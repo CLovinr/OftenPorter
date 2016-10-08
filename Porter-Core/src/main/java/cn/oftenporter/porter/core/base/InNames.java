@@ -55,6 +55,9 @@ public class InNames
 
     private static Name[] toNames(String[] strs)
     {
+        if(strs==null){
+            return EMPTY;
+        }
         Name[] names = new Name[strs.length];
         for (int i = 0; i < names.length; i++)
         {

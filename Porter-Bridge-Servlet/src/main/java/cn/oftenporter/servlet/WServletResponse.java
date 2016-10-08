@@ -7,8 +7,6 @@ import cn.oftenporter.porter.core.base.WResponse;
 import cn.oftenporter.porter.core.util.WPTool;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -17,7 +15,6 @@ import java.io.PrintWriter;
 public class WServletResponse implements WResponse
 {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WServletResponse.class);
     private HttpServletResponse response;
 
     WServletResponse(HttpServletResponse response)

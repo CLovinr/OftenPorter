@@ -27,8 +27,8 @@ public class LogUtil
      */
     public static String getCodePos(int n)
     {
-        StackTraceElement[] stacks = new Throwable().getStackTrace();
-        StackTraceElement stackTraceElement = stacks[n];
+        StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
+        StackTraceElement stackTraceElement = stacks[n+1];
         return toString(stackTraceElement);
     }
 

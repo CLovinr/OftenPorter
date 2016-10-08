@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import cn.oftenporter.demo.core.test4.porter.Hello1Porter;
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.init.PorterConf;
+import cn.oftenporter.porter.core.pbridge.PBridge;
 import cn.oftenporter.porter.core.pbridge.PCallback;
 import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.core.pbridge.PRequest;
@@ -29,45 +30,45 @@ public class Main1
 	conf.setContextName("Test4Main");
 	conf.getSeekPackages().addObjectPorter(new Hello1Porter());
 
+	PBridge bridge = localMain.getPInit().currentBridge();
 	localMain.startOne(conf);
 	logger.debug("****************************************************");
-	localMain.getBridge()
-		.request(new PRequest("/Test4Main/Hello1/say")
-			.setMethod(PortMethod.POST).addParam("age", "20"),
-			new PCallback()
-			{
+	bridge.request(new PRequest("/Test4Main/Hello1/say")
+		.setMethod(PortMethod.POST).addParam("age", "20"),
+		new PCallback()
+		{
 
-			    @Override
-			    public void onResponse(PResponse lResponse)
-			    {
-				logger.debug(String.valueOf(lResponse.getResponse()));
-			    }
-			});
+		    @Override
+		    public void onResponse(PResponse lResponse)
+		    {
+			logger.debug(String.valueOf(lResponse.getResponse()));
+		    }
+		});
 
-	localMain.getBridge()
-		.request(new PRequest("/Test4Main/Hello1/say2")
+	bridge.request(
+		new PRequest("/Test4Main/Hello1/say2")
 			.setMethod(PortMethod.POST).addParam("age", "500"),
-			new PCallback()
-			{
+		new PCallback()
+		{
 
-			    @Override
-			    public void onResponse(PResponse lResponse)
-			    {
-				logger.debug(String.valueOf(lResponse.getResponse()));
-			    }
-			});
-	localMain.getBridge()
-		.request(new PRequest("/Test4Main/Hello1/say3")
+		    @Override
+		    public void onResponse(PResponse lResponse)
+		    {
+			logger.debug(String.valueOf(lResponse.getResponse()));
+		    }
+		});
+	bridge.request(
+		new PRequest("/Test4Main/Hello1/say3")
 			.setMethod(PortMethod.POST).addParam("age", "300"),
-			new PCallback()
-			{
+		new PCallback()
+		{
 
-			    @Override
-			    public void onResponse(PResponse lResponse)
-			    {
-				logger.debug(String.valueOf(lResponse.getResponse()));
-			    }
-			});
+		    @Override
+		    public void onResponse(PResponse lResponse)
+		    {
+			logger.debug(String.valueOf(lResponse.getResponse()));
+		    }
+		});
 
 	logger.debug("****************************************************");
 	localMain.destroyAll();

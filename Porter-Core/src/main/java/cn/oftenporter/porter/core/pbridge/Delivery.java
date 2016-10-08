@@ -6,7 +6,7 @@ package cn.oftenporter.porter.core.pbridge;
 public interface Delivery
 {
     /**
-     * 可以访问当前实例的。请求格式为[/=pname]/contextName/ClassTied/[funTied|restValue][?name1=value1&name2=value2...]
+     * 可以访问当前实例的。请求格式为/contextName/ClassTied/[funTied|restValue][?name1=value1&name2=value2...]
      *
      * @return
      */

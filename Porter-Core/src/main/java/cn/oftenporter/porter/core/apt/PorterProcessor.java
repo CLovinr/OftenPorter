@@ -74,10 +74,6 @@ public class PorterProcessor extends AbstractProcessor
                     {
                         sourceGenerator.addUnNeceMethod(executableElement);
                     }
-                } else if (el.getKind() == ElementKind.FIELD)
-                {
-                    err("not support interface field(" + el + ")", el);
-                    return;
                 }
             }
             String name = element.getQualifiedName() + SUFFIX;

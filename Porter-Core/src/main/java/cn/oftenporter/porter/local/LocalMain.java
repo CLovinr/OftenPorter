@@ -16,12 +16,11 @@ import cn.oftenporter.porter.simple.DefaultUrlDecoder;
 public class LocalMain implements CommonMain
 {
     private PorterMain porterMain;
-    private PBridge bridge;
 
 
     public LocalMain(boolean responseWhenException, PName pName, String urlEncoding)
     {
-        bridge = new PBridge()
+        PBridge bridge = new PBridge()
         {
             @Override
             public void request(PRequest request, PCallback callback)
@@ -38,9 +37,10 @@ public class LocalMain implements CommonMain
         porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
     }
 
-    public PBridge getBridge()
+    protected LocalMain(boolean responseWhenException, PName pName, String urlEncoding, PBridge bridge)
     {
-        return bridge;
+        porterMain = new PorterMain(pName, bridge);
+        porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
     }
 
     @Override

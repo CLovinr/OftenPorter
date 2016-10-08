@@ -20,14 +20,14 @@ import java.util.*;
  * </pre>
  * Created by https://github.com/CLovinr on 2016/7/23.
  */
-public class PorterMain
+public final class PorterMain
 {
     private PortExecutor portExecutor;
 
-    private boolean isInit;
+    private  boolean isInit;
     private static final Logger LOGGER = LoggerFactory.getLogger(PorterMain.class);
-    private InnerBridge innerBridge;
-    private PInit pInit;
+    private final InnerBridge innerBridge;
+    private final PInit pInit;
 
     /**
      * @param pName  框架名称。
@@ -116,7 +116,7 @@ public class PorterMain
         PortContext portContext = new PortContext();
         portContext.setClassLoader(porterConf.getClassLoader());
 
-        LOGGER.debug("{} beforeSeek...", porterConf.getContextName());
+        LOGGER.debug(":{}/{} beforeSeek...",pInit.currentPName(), porterConf.getContextName());
 
         StateListenerForAll stateListenerForAll = new StateListenerForAll(porterConf.getStateListenerSet());
         ParamSourceHandleManager paramSourceHandleManager = bridge.paramSourceHandleManager();
@@ -128,16 +128,16 @@ public class PorterMain
                 porterConf.isEnableTiedNameDefault(), bridge, porterConf.isResponseWhenException());
 
         portContext.initSeek(porterConf, innerContextBridge);
-        LOGGER.debug("{} afterSeek...", porterConf.getContextName());
+        LOGGER.debug(":{}/{} afterSeek...",pInit.currentPName(), porterConf.getContextName());
         stateListenerForAll.afterSeek(porterConf.getUserInitParam(), paramSourceHandleManager);
 
         portContext.start();
 
-        LOGGER.debug("{} afterStart...", porterConf.getContextName());
+        LOGGER.debug(":{}/{} afterStart...", pInit.currentPName(), porterConf.getContextName());
         stateListenerForAll.afterStart(porterConf.getUserInitParam());
         portExecutor.addContext(bridge, portContext, stateListenerForAll, innerContextBridge);
         porterConf.initOk();
-        LOGGER.debug("{} started!", porterConf.getContextName());
+        LOGGER.debug(":{}/{} started!", pInit.currentPName(), porterConf.getContextName());
 
 
     }
@@ -145,7 +145,7 @@ public class PorterMain
     public synchronized void destroyAll()
     {
         checkInit();
-        LOGGER.debug("[{}] destroyAll...",getPInit().currentPName());
+        LOGGER.debug("[{}] destroyAll...", getPInit().currentPName());
         Iterator<Context> iterator = portExecutor.contextIterator();
         while (iterator.hasNext())
         {
@@ -154,7 +154,7 @@ public class PorterMain
             destroyOne(context);
         }
         portExecutor.clear();
-        LOGGER.debug("[{}] destroyAll end!",getPInit().currentPName());
+        LOGGER.debug("[{}] destroyAll end!", getPInit().currentPName());
     }
 
     private void destroyOne(Context context)
@@ -192,6 +192,6 @@ public class PorterMain
 
     public PreRequest forRequest(WRequest request, WResponse response)
     {
-        return portExecutor.forRequest(request, response,pInit);
+        return portExecutor.forRequest(request, response, pInit);
     }
 }

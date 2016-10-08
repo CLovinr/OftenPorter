@@ -19,10 +19,12 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * 用于servlet,请求地址格式为:http://host[:port]/ServletContextPath[/=pname]/contextName/ClassTied/[funTied|restValue][?name1=value1
+ * 用于servlet,请求地址格式为:http://host[:port]/ServletContextPath[/=pname]/contextName/ClassTied/[funTied|restValue][?name1
+ * =value1
  * &name2=value2...]
  * <pre>
  *     初始参数有：
+ *     urlPatternPrefix:必须值。
  *     pname:框架实例名称，默认为"WMainServlet".
  *     urlEncoding:地址参数的字符编码,默认为utf-8
  *     responseWhenException:默认为true。
@@ -32,10 +34,21 @@ public class WMainServlet extends HttpServlet implements CommonMain
 {
     private static final long serialVersionUID = 1L;
     private PorterMain porterMain;
+    private String pname, urlEncoding;
+    private Boolean responseWhenException;
+    private String urlPatternPrefix;
 
     public WMainServlet()
     {
 
+    }
+
+    public WMainServlet(String urlPatternPrefix, String pname, String urlEncoding, boolean responseWhenException)
+    {
+        this.urlPatternPrefix = urlPatternPrefix;
+        this.pname = pname;
+        this.urlEncoding = urlEncoding;
+        this.responseWhenException = responseWhenException;
     }
 
     @Override
@@ -91,15 +104,43 @@ public class WMainServlet extends HttpServlet implements CommonMain
             PortMethod method) throws IOException
     {
 
-        WRequest wreq = new WServletRequest(request, method);
-        WResponse wresp = new WServletResponse(response);
-        PreRequest req = porterMain.forRequest(wreq, wresp);
-        if (req != null)
+        WServletRequest wreq = new WServletRequest(request, urlPatternPrefix, method);
+        final WResponse wresp = new WServletResponse(response);
+
+        if (wreq.getPath().startsWith("/="))
         {
-            request.setCharacterEncoding(req.context.getContentEncoding());
-            response.setCharacterEncoding(req.context.getContentEncoding());
-            porterMain.doRequest(req, wreq, wresp);
+            wreq.setRequestPath(":" + wreq.getPath().substring(2));
+            porterMain.getPInit().toAllBridge().request(wreq, new PCallback()
+            {
+                @Override
+                public void onResponse(PResponse lResponse)
+                {
+                    Object obj = lResponse.getResponse();
+                    if (obj != null)
+                    {
+                        try
+                        {
+                            wresp.write(obj);
+                        } catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    WPTool.close(wresp);
+                }
+            });
+        } else
+        {
+            PreRequest req = porterMain.forRequest(wreq, wresp);
+            if (req != null)
+            {
+                request.setCharacterEncoding(req.context.getContentEncoding());
+                response.setCharacterEncoding(req.context.getContentEncoding());
+                porterMain.doRequest(req, wreq, wresp);
+            }
         }
+
+
     }
 
 
@@ -108,16 +149,28 @@ public class WMainServlet extends HttpServlet implements CommonMain
     {
         super.init();
 
-        String pname = getInitParameter("pname");
-        if (WPTool.isEmpty(pname))
+        if (this.pname == null)
         {
-            pname = WMainServlet.class.getSimpleName();
+            pname = getInitParameter("pname");
+            if (WPTool.isEmpty(pname))
+            {
+                pname = WMainServlet.class.getSimpleName();
+            }
         }
 
-        String urlEncoding = getInitParameter("urlEncoding");
-        if (urlEncoding == null)
+        if (this.urlEncoding == null)
         {
-            urlEncoding = "utf-8";
+            urlEncoding = getInitParameter("urlEncoding");
+            if (urlEncoding == null)
+            {
+                urlEncoding = "utf-8";
+            }
+
+        }
+
+        if (urlPatternPrefix == null)
+        {
+            urlPatternPrefix = getInitParameter("urlPatternPrefix");
         }
 
         PBridge bridge = new PBridge()
@@ -134,8 +187,10 @@ public class WMainServlet extends HttpServlet implements CommonMain
             }
         };
         porterMain = new PorterMain(new PName(pname), bridge);
-
-        boolean responseWhenException = !"false".equals(getInitParameter("responseWhenException"));
+        if (responseWhenException == null)
+        {
+            responseWhenException = !"false".equals(getInitParameter("responseWhenException"));
+        }
         porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
 
     }
