@@ -9,7 +9,15 @@
 #保留目录元素，这样classloader可以正常扫描。
 -keepdirectories
 
+-ignorewarnings
 
+-dontwarn java*
+-dontwarn cn.oftenporter.oftendb*
+
+#本地方法相关信息保留
+-keepclasseswithmembernames,includedescriptorclasses class * {
+    native <methods>;
+}
 
 #slf4j
 -keep class org.slf4j.impl.**{*;}
@@ -50,5 +58,6 @@
 -keep public class cn.oftenporter.porter.core.init**Porter*{public protected *;}
 -keep public class cn.oftenporter.porter.core.init**SeekPackages{public protected *;}
 
-
+#json
+#-keep class com.alibaba.fastjson**{public *;}
 

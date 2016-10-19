@@ -21,7 +21,8 @@ public class HMain extends LocalMain
     public HMain(boolean responseWhenException, PName pName,
             final String urlEncoding, final OkHttpClient okHttpClient, final String hostUrlPrefix)
     {
-        super(responseWhenException, pName, urlEncoding, new PBridge()
+        super();
+        newLocalMain(responseWhenException, pName, urlEncoding, new PBridge()
         {
             @Override
             public void request(PRequest request, final PCallback callback)
@@ -33,7 +34,7 @@ public class HMain extends LocalMain
                     {
                         path = ":" + path.substring(2);
                     }
-                    HttpUtil.requestWPorter(request.getParams(), HttpMethod.valueOf(request.getMethod().name()),
+                    HttpUtil.requestWPorter(request.getParameterMap(), HttpMethod.valueOf(request.getMethod().name()),
                             okHttpClient, hostUrlPrefix + path,
                             new JRCallback()
                             {

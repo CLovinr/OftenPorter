@@ -101,7 +101,7 @@ public class TestLocalMain
 
         localMain.startOne(porterConf);
         int n = 100000;
-        final int threads = 5;
+        final int threads = Runtime.getRuntime().availableProcessors();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(threads, new ThreadFactory()
         {

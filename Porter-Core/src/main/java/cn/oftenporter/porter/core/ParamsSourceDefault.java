@@ -7,6 +7,7 @@ import cn.oftenporter.porter.core.base.WRequest;
 import cn.oftenporter.porter.core.util.WPTool;
 
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -46,18 +47,18 @@ class ParamsSourceDefault implements ParamSource
         Enumeration<String> enumeration = new Enumeration<String>()
         {
             Enumeration<String> e1 = result.paramNames();
-            Enumeration<String> e2 = request.getParameterNames();
+            Iterator<String> e2 = request.getParameterMap().keySet().iterator();
 
             @Override
             public boolean hasMoreElements()
             {
-                return e1.hasMoreElements() || e2.hasMoreElements();
+                return e1.hasMoreElements() || e2.hasNext();
             }
 
             @Override
             public String nextElement()
             {
-                return e1.hasMoreElements() ? e1.nextElement() : e2.nextElement();
+                return e1.hasMoreElements() ? e1.nextElement() : e2.next();
             }
         };
         return enumeration;

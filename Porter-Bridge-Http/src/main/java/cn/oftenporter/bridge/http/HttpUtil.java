@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Created by 宇宙之灵 on 2015/9/12.
+ * Created by  on 2015/9/12.
  */
 public class HttpUtil
 {
@@ -40,8 +40,6 @@ public class HttpUtil
                     return true;
                 }
             });
-
-
             try
             {
                 SSLContext sslContext = SSLContext.getInstance("TLS");
@@ -525,14 +523,14 @@ public class HttpUtil
     /**
      * 把数据发向服务器，并接受响应结果。（同步的）
      *
-     * @param params      可以为null
-     * @param httpMethod   像服务器发起的请求方法
+     * @param params       可以为null
+     * @param httpMethod   向服务器发起的请求方法
      * @param okHttpClient
      * @param url          url地址
      * @param jrCallback
      * @return
      */
-    public static JResponse requestWPorter(Map<String,Object> params, HttpMethod httpMethod, OkHttpClient okHttpClient,
+    public static JResponse requestWPorter(Map<String, Object> params, HttpMethod httpMethod, OkHttpClient okHttpClient,
             String url, final JRCallback jrCallback)
     {
         JResponse jResponse = null;
@@ -575,7 +573,7 @@ public class HttpUtil
      * 把数据发向服务器，并接受响应结果。（同步的）
      *
      * @param wObject      可以为null
-     * @param httpMethod   像服务器发起的请求方法
+     * @param httpMethod   向服务器发起的请求方法
      * @param okHttpClient
      * @param url          url地址
      * @param jrCallback

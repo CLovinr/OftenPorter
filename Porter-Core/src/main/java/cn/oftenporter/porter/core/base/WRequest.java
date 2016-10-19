@@ -1,6 +1,7 @@
 package cn.oftenporter.porter.core.base;
 
 import java.util.Enumeration;
+import java.util.Map;
 
 /**
  * 对应于请求。
@@ -15,10 +16,16 @@ public interface WRequest
      */
     Object getParameter(String name);
 
+//    /**
+//     * 得到所有参数的名称。
+//     */
+//    Enumeration<String> getParameterNames();
+
     /**
-     * 得到所有参数的名称。
+     * 得到所有参数的map。
+     * @return
      */
-    Enumeration<String> getParameterNames();
+    Map<String,Object> getParameterMap();
 
     String getPath();
 

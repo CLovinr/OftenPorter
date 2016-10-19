@@ -3,9 +3,7 @@ package cn.oftenporter.porter.core.pbridge;
 import cn.oftenporter.porter.core.base.AppValues;
 import cn.oftenporter.porter.core.base.PortMethod;
 import cn.oftenporter.porter.core.base.WRequest;
-import cn.oftenporter.porter.core.util.EnumerationImpl;
 
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,23 +14,27 @@ public class PRequest implements WRequest, Cloneable
 {
     protected String requestPath;
     protected PortMethod method;
-    private HashMap<String, Object> params = new HashMap<String, Object>();
+    protected HashMap<String, Object> params;
 
     public PRequest(PortMethod method, String requestPath)
     {
+        this(method, requestPath, true);
+    }
+
+    protected PRequest(PortMethod method, String requestPath, boolean initMap)
+    {
         this.method = method;
         this.requestPath = requestPath;
+        if (initMap)
+        {
+            params = new HashMap<>();
+        }
     }
 
     public PRequest(WRequest request, String requestPath)
     {
-        this(request.getMethod(), requestPath);
-        Enumeration<String> e = request.getParameterNames();
-        while (e.hasMoreElements())
-        {
-            String name = e.nextElement();
-            addParam(name, request.getParameter(name));
-        }
+        this(request.getMethod(), requestPath, true);
+        params.putAll(request.getParameterMap());
     }
 
     public PRequest(String requestPath)
@@ -54,22 +56,26 @@ public class PRequest implements WRequest, Cloneable
         }
     }
 
+    @Override
     public Object getParameter(String name)
     {
         return params.get(name);
     }
 
-    public Enumeration<String> getParameterNames()
+    @Override
+    public Map<String, Object> getParameterMap()
     {
-        Enumeration<String> enumeration = new EnumerationImpl<String>(params.keySet());
-        return enumeration;
+        return params;
     }
 
+
+    @Override
     public String getPath()
     {
         return requestPath;
     }
 
+    @Override
     public PortMethod getMethod()
     {
         return method;
@@ -110,8 +116,4 @@ public class PRequest implements WRequest, Cloneable
         return this;
     }
 
-    public HashMap<String, Object> getParams()
-    {
-        return params;
-    }
 }

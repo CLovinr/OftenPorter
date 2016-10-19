@@ -24,7 +24,7 @@ public final class PorterMain
 {
     private PortExecutor portExecutor;
 
-    private  boolean isInit;
+    private boolean isInit;
     private static final Logger LOGGER = LoggerFactory.getLogger(PorterMain.class);
     private final InnerBridge innerBridge;
     private final PInit pInit;
@@ -64,6 +64,10 @@ public final class PorterMain
         portExecutor = new PortExecutor(pInit, urlDecoder, responseWhenException);
     }
 
+    public  UrlDecoder getUrlDecoder()
+    {
+        return portExecutor.getUrlDecoder();
+    }
 
     public PInit getPInit()
     {
@@ -116,7 +120,7 @@ public final class PorterMain
         PortContext portContext = new PortContext();
         portContext.setClassLoader(porterConf.getClassLoader());
 
-        LOGGER.debug(":{}/{} beforeSeek...",pInit.currentPName(), porterConf.getContextName());
+        LOGGER.debug(":{}/{} beforeSeek...", pInit.currentPName(), porterConf.getContextName());
 
         StateListenerForAll stateListenerForAll = new StateListenerForAll(porterConf.getStateListenerSet());
         ParamSourceHandleManager paramSourceHandleManager = bridge.paramSourceHandleManager();
@@ -128,7 +132,7 @@ public final class PorterMain
                 porterConf.isEnableTiedNameDefault(), bridge, porterConf.isResponseWhenException());
 
         portContext.initSeek(porterConf, innerContextBridge);
-        LOGGER.debug(":{}/{} afterSeek...",pInit.currentPName(), porterConf.getContextName());
+        LOGGER.debug(":{}/{} afterSeek...", pInit.currentPName(), porterConf.getContextName());
         stateListenerForAll.afterSeek(porterConf.getUserInitParam(), paramSourceHandleManager);
 
         portContext.start();

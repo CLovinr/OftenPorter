@@ -3,6 +3,7 @@ package cn.oftenporter.porter.local;
 import cn.oftenporter.porter.core.PreRequest;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.ITypeParser;
+import cn.oftenporter.porter.core.base.UrlDecoder;
 import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.init.PorterMain;
@@ -37,10 +38,24 @@ public class LocalMain implements CommonMain
         porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
     }
 
-    protected LocalMain(boolean responseWhenException, PName pName, String urlEncoding, PBridge bridge)
+
+    /**
+     * 接着请调用{@linkplain #newLocalMain(boolean, PName, String, PBridge)}
+     */
+    protected LocalMain()
+    {
+
+    }
+
+    protected void newLocalMain(boolean responseWhenException, PName pName, String urlEncoding, PBridge bridge)
     {
         porterMain = new PorterMain(pName, bridge);
         porterMain.init(new DefaultUrlDecoder(urlEncoding), responseWhenException);
+    }
+
+    protected UrlDecoder getUrlDecoder()
+    {
+        return porterMain.getUrlDecoder();
     }
 
     @Override

@@ -29,6 +29,9 @@ public class LogUtil
     {
         StackTraceElement[] stacks = Thread.currentThread().getStackTrace();
         StackTraceElement stackTraceElement = stacks[n+1];
+        if(stackTraceElement.getClassName().equals(LogUtil.class.getName())){
+            stackTraceElement=stacks[n+2];
+        }
         return toString(stackTraceElement);
     }
 

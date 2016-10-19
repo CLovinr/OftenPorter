@@ -64,6 +64,11 @@ public class PortExecutor
         contextMap.put(bridge.contextName(), context);
     }
 
+    public UrlDecoder getUrlDecoder()
+    {
+        return urlDecoder;
+    }
+
     /**
      * 移除指定的context
      *
