@@ -19,6 +19,7 @@ public class SqlHandle implements DBHandle
     private String tableName;// 表名
 
     private boolean isTransaction;
+    private Boolean field2LowerCase = null;
 
     /**
      * 创建一个DbRwMysql
@@ -30,6 +31,17 @@ public class SqlHandle implements DBHandle
     {
         this.conn = conn;
         this.tableName = tableName;
+    }
+
+    /**
+     * 是否数据库的返回结果转换为小写：true转为小写，false转为大写，null什么都不做。
+     *
+     * @param field2LowerCase
+     */
+    public SqlHandle setField2LowerCase(Boolean field2LowerCase)
+    {
+        this.field2LowerCase = field2LowerCase;
+        return this;
     }
 
     public void setTableName(String tableName)
@@ -176,7 +188,8 @@ public class SqlHandle implements DBHandle
             int columnCount = metaData.getColumnCount();
             for (int i = 1; i <= columnCount; i++)
             {
-                jsonObject.put(metaData.getColumnName(i), rs.getObject(i));
+                jsonObject.put(field2LowerCase == null ? metaData.getColumnName(i) : (field2LowerCase ? metaData
+                        .getColumnName(i).toLowerCase() : metaData.getColumnName(i).toUpperCase()), rs.getObject(i));
             }
         } else
         {
