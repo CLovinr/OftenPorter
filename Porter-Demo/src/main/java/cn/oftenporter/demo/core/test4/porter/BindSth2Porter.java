@@ -26,8 +26,8 @@ public class BindSth2Porter
     @PortInObj({ User.class })
     public Object send(WObject wObject)
     {
-	ID id = wObject.cinObject(ID.class, 0);
-	User user = wObject.finObject(User.class, 0);
+	ID id = wObject.cinObject(0);
+	User user = wObject.finObject(0);
 	return user + "," + id;
     }
 

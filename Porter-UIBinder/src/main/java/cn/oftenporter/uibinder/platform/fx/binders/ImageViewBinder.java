@@ -10,6 +10,9 @@ import javafx.event.EventHandler;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
+import java.io.File;
+import java.net.URI;
+
 /**
  * @author Created by https://github.com/CLovinr on 2016/10/7.
  */
@@ -36,7 +39,7 @@ public class ImageViewBinder extends FXBinder<ImageView>
             public synchronized void changed(ObservableValue<? extends Image> observable, Image oldValue,
                     Image newValue)
             {
-                doOnchange(oldValue,newValue);
+                doOnchange(oldValue, newValue);
             }
         };
         view.imageProperty().addListener(changeListener);
@@ -48,7 +51,26 @@ public class ImageViewBinder extends FXBinder<ImageView>
     {
         if (AttrEnum.ATTR_VALUE == attrEnum)
         {
-            Image image = (Image) value;
+            Image image;
+            if (value == null)
+            {
+                image = null;
+            } else if (value instanceof String)
+            {
+                File file = new File((String) value);
+                image = new Image(file.toURI().toString());
+            } else if (value instanceof File)
+            {
+                File file = (File) value;
+                image = new Image(file.toURI().toString());
+            } else if (value instanceof URI)
+            {
+                URI uri = (URI) value;
+                image = new Image(uri.toString());
+            } else
+            {
+                image = (Image) value;
+            }
             view.setImage(image);
         } else if (attrEnum == AttrEnum.ATTR_VALUE_CHANGE_LISTENER)
         {

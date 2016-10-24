@@ -1,8 +1,12 @@
 package cn.oftenporter.demo.servlet.demo1;
 
+import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebInitParam;
 import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.slf4j.Logger;
@@ -16,10 +20,10 @@ import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.pbridge.PCallback;
 import cn.oftenporter.porter.core.pbridge.PInit;
 import cn.oftenporter.porter.core.pbridge.PInit.Direction;
-import cn.oftenporter.porter.core.util.LogUtil;
 import cn.oftenporter.porter.core.pbridge.PName;
 import cn.oftenporter.porter.core.pbridge.PRequest;
 import cn.oftenporter.porter.core.pbridge.PResponse;
+import cn.oftenporter.porter.core.util.LogUtil;
 import cn.oftenporter.porter.local.LocalMain;
 import cn.oftenporter.servlet.WMainServlet;
 
@@ -44,6 +48,14 @@ public class MyWMainServlet extends WMainServlet
     }
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+	    throws ServletException, IOException
+    {
+	req.setAttribute("time", System.nanoTime());
+	super.doGet(req, resp);
+    }
+
+    @Override
     public void init() throws ServletException
     {
 	super.init();
@@ -57,7 +69,7 @@ public class MyWMainServlet extends WMainServlet
 	    @Override
 	    public Object willPass(WObject wObject, DuringType type)
 	    {
-		LOGGER.debug("");
+		//LOGGER.debug("");
 		return null;
 	    }
 

@@ -51,36 +51,28 @@ public abstract class WObject
     /**
      * 获取函数上绑定的对象。
      */
-    public abstract <T> T finObject(Class<T> clazz, int index);
+    public abstract <T> T finObject(int index);
 
     /**
      * 获取类上绑定的对象。
      */
-    public abstract <T> T cinObject(Class<T> clazz, int index);
+    public abstract <T> T cinObject(int index);
 
     /**
      * 见{@linkplain #savedObject(String) savedObject(Class.getName())}.
      */
     public <T> T savedObject(Class<T> key)
     {
-        Object obj = savedObject(key.getName());
-        return (T) obj;
+        T obj = savedObject(key.getName());
+        return obj;
     }
 
-    /**
-     * 见{@linkplain #savedObject(String)}
-     */
-    public <T> T savedObject(Class<T> type, String key)
-    {
-        Object obj = savedObject(key);
-        return (T) obj;
-    }
 
     /**
      * 获取当前context运行期对象实例。
      * 见{@linkplain PorterConf#addContextAutoSet(String, Object)}
      */
-    public abstract Object savedObject(String key);
+    public abstract <T> T savedObject(String key);
 
 
     /**
@@ -88,27 +80,43 @@ public abstract class WObject
      */
     public <T> T gsavedObject(Class<T> key)
     {
-        Object obj = gsavedObject(key.getName());
-        return (T) obj;
+        T obj = gsavedObject(key.getName());
+        return obj;
     }
 
-    /**
-     * 见{@linkplain #gsavedObject(String)}
-     */
-    public <T> T gsavedObject(Class<T> type, String key)
-    {
-        Object obj = gsavedObject(key);
-        return (T) obj;
-    }
 
     /**
      * 获取全局运行期对象.
      * 见{@linkplain CommonMain#addGlobalAutoSet(String, Object)}
      */
-    public abstract Object gsavedObject(String key);
+    public abstract <T> T gsavedObject(String key);
 
     public abstract Delivery delivery();
 
     public abstract UrlDecoder.Result url();
+
+    public <T> T cnOf(int index)
+    {
+        T t = (T) cn[index];
+        return t;
+    }
+
+    public <T> T cuOf(int index)
+    {
+        T t = (T) cu[index];
+        return t;
+    }
+
+    public <T> T fnOf(int index)
+    {
+        T t = (T) fn[index];
+        return t;
+    }
+
+    public <T> T fuOf(int index)
+    {
+        T t = (T) fu[index];
+        return t;
+    }
 
 }

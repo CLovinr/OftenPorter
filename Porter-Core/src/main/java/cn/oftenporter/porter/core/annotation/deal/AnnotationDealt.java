@@ -50,7 +50,11 @@ public final class AnnotationDealt
             return null;
         }
         _Nece _nece = new _Nece();
-        _nece.value = nece.value();
+        if("".equals(nece.value())){
+            _nece.value=field.getName();
+        }else {
+            _nece.value = nece.value();
+        }
         return _nece;
     }
 
@@ -62,7 +66,11 @@ public final class AnnotationDealt
             return null;
         }
         _UnNece _unNece = new _UnNece();
-        _unNece.value = unNece.value();
+        if("".equals(unNece.value())){
+            _unNece.value=unNece.value();
+        }else{
+            _unNece.value = unNece.value();
+        }
         return _unNece;
     }
 

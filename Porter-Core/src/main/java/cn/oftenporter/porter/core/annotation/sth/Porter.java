@@ -75,6 +75,7 @@ public final class Porter
         Map<String, Object> contextAutoSet = innerContextBridge.contextAutoSet;
         Map<String, Object> globalAutoSet = innerContextBridge.innerBridge.globalAutoSet;
         Field[] fields = WPTool.getAllFields(object.getClass());
+        RuntimeException thr = null;
         for (int i = 0; i < fields.length; i++)
         {
 
@@ -142,15 +143,20 @@ public final class Porter
                 }
                 if (value == null)
                 {
-                    continue;
+                    thr = new RuntimeException(String.format("AutoSet:could not set [%s]", f));
+                    break;
                 }
                 f.set(object, value);
-                LOGGER.debug("AutoSet [{}] with [{}]",f,value);
+                LOGGER.debug("AutoSet [{}] with [{}]", f, value);
             } catch (Exception e)
             {
                 LOGGER.error("AutoSet failed for [{}]({}),ex={}", f, autoSet.range(), e.getMessage());
             }
 
+        }
+        if (thr != null)
+        {
+            throw thr;
         }
     }
 
@@ -166,7 +172,7 @@ public final class Porter
 
         TypeTo typeTo = new TypeTo(innerContextBridge);
         f.set(object, typeTo);
-        LOGGER.debug("AutoSet [{}] with default object [{}]",f,typeTo);
+        LOGGER.debug("AutoSet [{}] with default object [{}]", f, typeTo);
         return true;
     }
 

@@ -2,6 +2,8 @@ package cn.oftenporter.demo.servlet.demo1.porter;
 
 import java.util.ArrayList;
 
+import javax.servlet.http.HttpServletRequest;
+
 import cn.oftenporter.porter.core.annotation.AutoSet;
 import cn.oftenporter.porter.core.annotation.Parser;
 import cn.oftenporter.porter.core.annotation.PortDestroy;
@@ -12,20 +14,19 @@ import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.util.LogUtil;
 import cn.oftenporter.porter.simple.parsers.IntParser;
 import cn.oftenporter.porter.simple.parsers.StringParser;
+import cn.oftenporter.servlet.WServletRequest;
 
 /**
  * Created by https://github.com/CLovinr on 2016/9/4.
  */
-@Parser({ @Parser.parse(varName =  "age" , parser = IntParser.class) })
-@Parser.parse(varName =  "sex" , parser = StringParser.class)
+@Parser({ @Parser.parse(varName = "age", parser = IntParser.class) })
+@Parser.parse(varName = "sex", parser = StringParser.class)
 @PortIn(value = "", tiedType = TiedType.REST)
-public  class HelloPorter
+public class HelloPorter
 {
 
-    
-
-     //@AutoSet
-     //private PersonAP personAP;
+    // @AutoSet
+    // private PersonAP personAP;
 
     @AutoSet
     private ArrayList<String> list;
@@ -44,7 +45,12 @@ public  class HelloPorter
     @PortIn(tiedType = TiedType.REST)
     public Object sayHello(WObject wObject)
     {
-	return "Hello World-REST!" + wObject.restValue;
+	HttpServletRequest request =
+		((WServletRequest) wObject.getRequest()).getServletRequest();
+	return "Hello World-REST!" + wObject.restValue
+		+ ":dt="
+		+ ((System.nanoTime() - (long) request.getAttribute("time"))
+			/ 1000000.0)+"ms";
     }
 
     // @PortIn

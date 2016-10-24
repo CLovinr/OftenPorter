@@ -82,7 +82,7 @@ public abstract class Binder<T> implements Cloneable
 
     private void doOnchange(String prefix, String tiedFun, String varName, Object oldValue, Object newValue)
     {
-        if (tiedFun != null)
+        if (tiedFun != null&&onValueChangedListener!=null)
         {
             onValueChangedListener
                     .onChanged(prefix, tiedFun, varName,

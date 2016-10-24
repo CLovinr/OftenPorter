@@ -17,7 +17,10 @@ public class FXApplication
 
     static
     {
-        BinderFactory<Node> binderFactory = new BinderFactory<>(Node.class);
+        BinderFactory binderFactory = new BinderFactory(MenuItem.class,Node.class);
+        //MenuItem
+        binderFactory.put(MenuItem.class,MenuItemBinder.class);
+        //Node
         binderFactory.put(Button.class, ButtonBaseBinder.class);
         binderFactory.put(TextInputControl.class, TextBinder.class);
         binderFactory.put(Labeled.class, LabeledBinder.class);

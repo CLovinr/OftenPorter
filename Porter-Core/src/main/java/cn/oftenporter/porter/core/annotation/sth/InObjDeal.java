@@ -136,13 +136,13 @@ public class InObjDeal
             List<Field> fieldList = null;
             String nameStr = null;
             _Nece nece = annotationDealt.nece(field);
-            _UnNece unNece = annotationDealt.unNece(field);
+            _UnNece unNece;
             if (nece != null)
             {
                 nameStr = nece.getValue();
                 nameList = neceNames;
                 fieldList = neces;
-            } else if (unNece != null)
+            } else if ((unNece = annotationDealt.unNece(field)) != null)
             {
                 nameStr = unNece.getValue();
                 nameList = unneceNames;
@@ -187,7 +187,7 @@ public class InObjDeal
                 neces.toArray(new Field[0]), unneces.toArray(new Field[0]));
 
 
-        CacheOne cacheOne = new CacheOne(one);
+ //       CacheOne cacheOne = new CacheOne(one);
 //        //获取父类的绑定。
 //        BindFromSuperUtil.bindFromSuperClass(clazz, cacheOne);
 

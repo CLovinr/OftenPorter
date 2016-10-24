@@ -477,12 +477,13 @@ public class Common
 
 
     /**
-     * @see #replaceData(DBHandleSource, ParamsGetter, Condition, WObject, NameValues, int)
+     * @see #replaceData(DBHandleSource, ParamsGetter, Condition, NameValues, WObject, int)
      */
     public JResponse replaceData(DBHandleSource dbHandleSource, ParamsGetter paramsGetter, Condition condition,
-            WObject wObject, NameValues nameValues)
+            NameValues nameValues,
+            WObject wObject)
     {
-        return replaceData(dbHandleSource, paramsGetter, condition, wObject, nameValues, DataAble.OPTION_CODE_DEFAULT);
+        return replaceData(dbHandleSource, paramsGetter, condition, nameValues, wObject, DataAble.OPTION_CODE_DEFAULT);
     }
 
     /**
@@ -494,7 +495,8 @@ public class Common
      * @return
      */
     public JResponse replaceData(DBHandleSource dbHandleSource, ParamsGetter paramsGetter, final Condition condition,
-            WObject wObject, final NameValues nameValues, int optionCode)
+            final NameValues nameValues,
+            WObject wObject, int optionCode)
     {
 
         Dealt dealt = new Dealt()

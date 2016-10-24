@@ -201,12 +201,12 @@ public class Common2
     }
 
     /**
-     * @see Common#replaceData(DBHandleSource, ParamsGetter, Condition, WObject, NameValues)
+     * @see Common#replaceData(DBHandleSource, ParamsGetter, Condition, NameValues, WObject)
      */
-    public JResponse replaceData(SourceAndPGetter sourceAndPGeter, Condition condition,
-            WObject wObject, NameValues nameValues)
+    public JResponse replaceData(SourceAndPGetter sourceAndPGeter, Condition condition, NameValues nameValues,
+            WObject wObject)
     {
-        return common.replaceData(sourceAndPGeter, sourceAndPGeter, condition, wObject, nameValues);
+        return common.replaceData(sourceAndPGeter, sourceAndPGeter, condition, nameValues, wObject);
     }
 
     /**

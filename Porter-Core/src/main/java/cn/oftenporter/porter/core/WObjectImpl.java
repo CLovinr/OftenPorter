@@ -40,7 +40,7 @@ class WObjectImpl extends WObject
     }
 
     @Override
-    public <T> T finObject(Class<T> clazz, int index)
+    public <T> T finObject( int index)
     {
         Object obj = finObjs[index];
         T t = (T) obj;
@@ -49,7 +49,7 @@ class WObjectImpl extends WObject
 
 
     @Override
-    public <T> T cinObject(Class<T> clazz, int index)
+    public <T> T cinObject(int index)
     {
         Object obj = cinObjs[index];
         T t = (T) obj;
@@ -58,15 +58,17 @@ class WObjectImpl extends WObject
 
 
     @Override
-    public Object savedObject(String key)
+    public <T> T savedObject(String key)
     {
-        return context.innerContextBridge.contextAutoSet.get(key);
+        T t = (T) context.innerContextBridge.contextAutoSet.get(key);
+        return t;
     }
 
     @Override
-    public Object gsavedObject(String key)
+    public <T> T gsavedObject(String key)
     {
-        return context.innerContextBridge.innerBridge.globalAutoSet.get(key);
+        T t = (T) context.innerContextBridge.innerBridge.globalAutoSet.get(key);
+        return t;
     }
 
     @Override

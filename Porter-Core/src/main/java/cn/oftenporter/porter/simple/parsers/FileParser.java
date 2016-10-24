@@ -1,15 +1,14 @@
 package cn.oftenporter.porter.simple.parsers;
 
-
 import cn.oftenporter.porter.core.annotation.NotNull;
 
+import java.io.File;
 
 /**
+ * @author Created by https://github.com/CLovinr on 2016/10/24.
  */
-public class FloatParser extends TypeParser
+public class FileParser extends TypeParser
 {
-
-
     @Override
     public ParseResult parse(@NotNull String name, @NotNull Object value)
     {
@@ -17,12 +16,12 @@ public class FloatParser extends TypeParser
         try
         {
             Object v;
-            if (value instanceof Float)
+            if (value instanceof File)
             {
                 v = value;
             } else
             {
-                v = Float.parseFloat(value.toString());
+                v = new File(String.valueOf(value));
             }
 
             result = new ParseResult(v);

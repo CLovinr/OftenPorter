@@ -5,8 +5,11 @@ import cn.oftenporter.uibinder.core.ui.OnValueChangedListener;
 import cn.oftenporter.uibinder.platform.fx.FXBinder;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ChoiceBox;
+
+import java.util.List;
 
 /**
  * @author Created by https://github.com/CLovinr on 2016/10/7.
@@ -52,11 +55,18 @@ public class ChoiceBoxBinder extends FXBinder<ChoiceBox>
             onValueChangedListener = (OnValueChangedListener) value;
         } else if (attrEnum == AttrEnum.ATTR_OTHER)
         {
+            ObservableList observableList = null;
             if (value instanceof ObservableList)
             {
-                ObservableList observableList = (ObservableList) value;
-                view.setItems(observableList);
+                observableList = (ObservableList) value;
+            } else if (value instanceof String[])
+            {
+                observableList = FXCollections.observableArrayList((String[]) value);
+            } else if (value instanceof List)
+            {
+                observableList = FXCollections.observableList((List) value);
             }
+            view.setItems(observableList);
         } else
         {
             super.set(attrEnum, value);

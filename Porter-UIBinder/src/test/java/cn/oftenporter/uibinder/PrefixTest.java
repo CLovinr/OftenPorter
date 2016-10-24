@@ -42,7 +42,7 @@ public class PrefixTest
     @Test
     public void testForDelete() throws Exception
     {
-        Prefix prefix = Prefix.forDelete("C0", TempPorter.class);
+        Prefix prefix = Prefix.forDelete("C0", TempPorter.class,false);
         Assert.assertEquals("/C0/Temp/", prefix.pathPrefix);
     }
 
@@ -52,7 +52,7 @@ public class PrefixTest
     @Test
     public void testBuildPrefix() throws Exception
     {
-        Prefix prefix = Prefix.buildPrefix("C0", TempPorter.class);
+        Prefix prefix = Prefix.buildPrefix("C0", TempPorter.class,false);
         Assert.assertEquals("temp_", prefix.idPrefix);
         Assert.assertEquals("/C0/Temp/", prefix.pathPrefix);
     }

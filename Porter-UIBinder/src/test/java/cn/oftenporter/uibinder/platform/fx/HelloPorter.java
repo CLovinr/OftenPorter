@@ -20,4 +20,18 @@ public class HelloPorter
                         + ":progress=" + wObject.fn[5] + ":slider=" + wObject.fn[6] + ":choice=" + wObject.fn[7] +
                         ":color=" + wObject.fn[8] + ":date=" + wObject.fn[9] + ":combox=" + wObject.fn[10]);
     }
+
+    @PortIn(value = "file")
+    public void file(){
+        LogUtil.printErrPosLn();
+    }
+    @PortIn(value = "fileClose")
+    public void fileClose(){
+        LogUtil.printErrPosLn();
+    }
+
+    @PortIn(value = "edit")
+    public void edit(){
+        LogUtil.printErrPosLn();
+    }
 }

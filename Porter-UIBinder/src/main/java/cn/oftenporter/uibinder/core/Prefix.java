@@ -35,9 +35,9 @@ public class Prefix
         return idPrefix + "" + pathPrefix + ",callback=" + bindCallbackMethod;
     }
 
-    public static Prefix forDelete(String contextName, Class<?> clazz)
+    public static Prefix forDelete(String contextName, Class<?> clazz, boolean enableDefaultValue)
     {
-        return new Prefix(null, "/" + contextName + "/" + classTied(clazz) + "/", null, null);
+        return new Prefix(null, "/" + contextName + "/" + classTied(clazz, enableDefaultValue) + "/", null, null);
     }
 
     public static Prefix forDelete(String porterPrefix)
@@ -59,7 +59,7 @@ public class Prefix
         this.errListener = errListener;
     }
 
-    private static String classTied(Class<?> clazz)
+    private static String classTied(Class<?> clazz, boolean enableDefaultValue)
     {
         PortIn portIn = clazz.getAnnotation(PortIn.class);
         if (portIn == null)
@@ -67,7 +67,7 @@ public class Prefix
             throw new RuntimeException(
                     "class [" + clazz.getName() + "] not with annotation of @" + PortIn.class.getName());
         }
-        String tied = PortUtil.tied(portIn, clazz, false);
+        String tied = PortUtil.tied(portIn, clazz, enableDefaultValue);
         return tied;
     }
 
@@ -80,12 +80,13 @@ public class Prefix
      *     3.callback:{@linkplain BinderDefault#CALLBACK}
      * </pre>
      *
-     * @param c 接口类
+     * @param c                  接口类
+     * @param enableDefaultValue 是否允许类的默认绑定名。
      * @return 返回构造的对象
      */
-    public static Prefix buildPrefix(String contextName, Class<?> c)
+    public static Prefix buildPrefix(String contextName, Class<?> c, boolean enableDefaultValue)
     {
-        String tied = classTied(c);
+        String tied = classTied(c, enableDefaultValue);
         Prefix prefix = new Prefix(
                 tied.substring(0, 1).toLowerCase() + tied.substring(1) + "_",
                 "/" + contextName + "/" + tied + "/", BinderDefault.CALLBACK, null);

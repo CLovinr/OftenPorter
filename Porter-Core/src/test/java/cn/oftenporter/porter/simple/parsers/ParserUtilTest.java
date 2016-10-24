@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.junit.Test;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +39,7 @@ public class ParserUtilTest
         assertEquals(DoubleParser.class, ParserUtil.getTypeParser(double.class));
         System.out.println(int.class);
 
+        assertEquals(FileParser.class, ParserUtil.getTypeParser(File.class));
         assertEquals(ArrayListArrParser.class, ParserUtil.getTypeParser(ArrayList.class));
         assertEquals(BigDecimalParser.class, ParserUtil.getTypeParser(BigDecimal.class));
         assertEquals(JSONArrayParser.class, ParserUtil.getTypeParser(JSONArray.class));

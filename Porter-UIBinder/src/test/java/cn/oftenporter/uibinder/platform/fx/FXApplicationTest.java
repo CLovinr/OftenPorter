@@ -72,13 +72,13 @@ public class FXApplicationTest
         {
 
             Parent root = FXMLLoader.load(getClass().getResource("/fx/test01.fxml"));
-            Scene scene = new Scene(root, 500, 300);
+            Scene scene = new Scene(root, 700, 500);
             primaryStage.initStyle(StageStyle.DECORATED);
             primaryStage.setScene(scene);
             primaryStage.show();
 
 
-            Prefix prefix = Prefix.buildPrefix("C0", HelloPorter.class);
+            Prefix prefix = Prefix.buildPrefix("C0", HelloPorter.class,false);
             UIProvider uiProvider = new FXUIProvider(prefix,
                     root);
             uiBinderManager.bind(uiProvider);

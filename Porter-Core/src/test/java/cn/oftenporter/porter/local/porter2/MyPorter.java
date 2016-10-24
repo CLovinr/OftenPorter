@@ -22,7 +22,7 @@ public class MyPorter
     @PortInObj(IDemo.class)
     public IDemo hello(WObject wObject)
     {
-        IDemo iDemo = wObject.finObject(IDemo.class, 0);
+        IDemo iDemo = wObject.finObject(0);
         return iDemo;
     }
 }

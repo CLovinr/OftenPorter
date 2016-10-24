@@ -4,6 +4,7 @@ import cn.oftenporter.porter.core.base.ITypeParser;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Map;
@@ -70,12 +71,15 @@ public class ParserUtil
             } else if (type == JSONObject.class)
             {
                 clazz = JSONObjectParser.class;
-            }  else if (type == String.class)
+            } else if (type == String.class)
             {
                 clazz = StringParser.class;
             } else if (type == Map.class)
             {
                 clazz = JSON2MapParser.class;
+            } else if (type == File.class)
+            {
+                clazz = FileParser.class;
             }
             //////////
             else if (type == Character.class)

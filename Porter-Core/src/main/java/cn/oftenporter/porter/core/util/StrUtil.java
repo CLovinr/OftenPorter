@@ -7,6 +7,12 @@ import java.util.StringTokenizer;
  */
 public class StrUtil
 {
+    /**
+     * 分隔字符串。
+     * @param srcString
+     * @param splitStr
+     * @return
+     */
     public static String[] split(String srcString, String splitStr)
     {
         StringTokenizer tokenizer = new StringTokenizer(srcString, splitStr);
@@ -16,5 +22,15 @@ public class StrUtil
             rs[i] = tokenizer.nextToken();
         }
         return rs;
+    }
+
+    /**
+     * 可变数组转换。
+     * @param args
+     * @return
+     */
+    public static String[] array(String... args)
+    {
+        return args;
     }
 }
