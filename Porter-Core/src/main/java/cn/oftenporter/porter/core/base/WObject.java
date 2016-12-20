@@ -3,6 +3,7 @@ package cn.oftenporter.porter.core.base;
 import cn.oftenporter.porter.core.init.CommonMain;
 import cn.oftenporter.porter.core.init.PorterConf;
 import cn.oftenporter.porter.core.pbridge.Delivery;
+import cn.oftenporter.porter.core.pbridge.PName;
 
 /**
  * 接口中间对象。
@@ -40,7 +41,7 @@ public abstract class WObject
     public InNames fInNames;
 
     /**
-     * 如果当前是rest，则其值为""或非空。
+     * 如果当前是rest，则其值为""或非空;否则为null.
      */
     public String restValue;
 
@@ -94,6 +95,12 @@ public abstract class WObject
     public abstract Delivery delivery();
 
     public abstract UrlDecoder.Result url();
+
+    /**
+     * 得到所属的接口框架名称。
+     * @return
+     */
+    public abstract PName getPName();
 
     public <T> T cnOf(int index)
     {

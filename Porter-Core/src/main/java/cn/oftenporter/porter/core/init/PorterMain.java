@@ -37,6 +37,20 @@ public final class PorterMain
     {
         this.innerBridge = new InnerBridge();
         pInit = new DefaultPInit(pName, bridge);
+        pInit.setPorterAttr(new PorterAttr()
+        {
+            @Override
+            public ClassLoader getClassLoader(String contextName)
+            {
+                Context context = portExecutor == null ? null : portExecutor.getContext(contextName);
+                ClassLoader classLoader = null;
+                if (context != null)
+                {
+                    classLoader = context.portContext.getClassLoader();
+                }
+                return classLoader;
+            }
+        });
     }
 
     public PorterConf newPorterConf()
@@ -61,10 +75,10 @@ public final class PorterMain
             throw new RuntimeException("already init!");
         }
         isInit = true;
-        portExecutor = new PortExecutor(pInit, urlDecoder, responseWhenException);
+        portExecutor = new PortExecutor(pInit.currentPName(), pInit, urlDecoder, responseWhenException);
     }
 
-    public  UrlDecoder getUrlDecoder()
+    public UrlDecoder getUrlDecoder()
     {
         return portExecutor.getUrlDecoder();
     }

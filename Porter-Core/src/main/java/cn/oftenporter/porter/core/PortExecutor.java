@@ -9,10 +9,7 @@ import cn.oftenporter.porter.core.base.*;
 import cn.oftenporter.porter.core.init.InnerContextBridge;
 import cn.oftenporter.porter.core.init.PorterBridge;
 import cn.oftenporter.porter.core.init.PorterConf;
-import cn.oftenporter.porter.core.pbridge.Delivery;
-import cn.oftenporter.porter.core.pbridge.PCallback;
-import cn.oftenporter.porter.core.pbridge.PInit;
-import cn.oftenporter.porter.core.pbridge.PResponse;
+import cn.oftenporter.porter.core.pbridge.*;
 import cn.oftenporter.porter.core.util.WPTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,15 +33,17 @@ public class PortExecutor
 
     private CheckPassable[] allGlobalChecks;
     private UrlDecoder urlDecoder;
-    private Delivery delivery;
     private boolean responseWhenException;
+    private PName pName;
+    private DeliveryBuilder deliveryBuilder;
 
-    public PortExecutor(Delivery delivery, UrlDecoder urlDecoder,
+    public PortExecutor(PName pName, Delivery delivery, UrlDecoder urlDecoder,
             boolean responseWhenException)
     {
-        this.delivery = delivery;
+        this.pName = pName;
         this.urlDecoder = urlDecoder;
         this.responseWhenException = responseWhenException;
+        deliveryBuilder = DeliveryBuilder.getBuilder(true, delivery);
     }
 
     public void initAllGlobalChecks(CheckPassable[] allGlobalChecks)
@@ -56,7 +55,7 @@ public class PortExecutor
             InnerContextBridge innerContextBridge)
     {
         PorterConf porterConf = bridge.porterConf();
-        Context context = new Context(delivery, portContext,
+        Context context = new Context(deliveryBuilder, portContext,
                 porterConf.getContextChecks().toArray(new CheckPassable[0]),
                 bridge.paramSourceHandleManager(), stateListenerForAll, innerContextBridge);
         context.name = bridge.contextName();
@@ -78,6 +77,17 @@ public class PortExecutor
     public Context removeContext(String contextName)
     {
         return contextMap.remove(contextName);
+    }
+
+    /**
+     * 得到指定的context。
+     *
+     * @param contextName
+     * @return
+     */
+    public Context getContext(String contextName)
+    {
+        return contextMap.get(contextName);
     }
 
     /**
@@ -175,7 +185,7 @@ public class PortExecutor
         Context context = req.context;
         UrlDecoder.Result result = req.result;
 
-        WObjectImpl wObject = new WObjectImpl(result, request, response, context);
+        WObjectImpl wObject = new WObjectImpl(pName, result, request, response, context);
 
         Porter classPort = context.portContext.getClassPort(result.classTied());
 

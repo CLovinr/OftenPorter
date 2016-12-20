@@ -1,6 +1,5 @@
 package cn.oftenporter.porter.core.init;
 
-import cn.oftenporter.porter.core.annotation.sth.CacheOne;
 import cn.oftenporter.porter.core.annotation.sth.CacheTool;
 import cn.oftenporter.porter.core.base.CheckPassable;
 import cn.oftenporter.porter.core.base.TypeParserStore;

@@ -33,6 +33,12 @@ public class FXUIProvider extends UIProvider
         this.parent = parent;
     }
 
+    public FXUIProvider(Prefix prefix, Parent parent, String idString)
+    {
+        this(prefix, parent);
+        setIdString(idString);
+    }
+
     @Override
     public void search(UIPlatform uiPlatform)
     {
@@ -109,6 +115,7 @@ public class FXUIProvider extends UIProvider
 
     /**
      * 搜索子菜单
+     *
      * @param uiPlatform
      * @param menu
      */
@@ -135,8 +142,9 @@ public class FXUIProvider extends UIProvider
                     hashMap.put(id, factory.getBinder(menuItem));
                 }
             }
-            if(menuItem instanceof Menu){
-                search(uiPlatform,(Menu)menuItem);
+            if (menuItem instanceof Menu)
+            {
+                search(uiPlatform, (Menu) menuItem);
             }
         }
     }

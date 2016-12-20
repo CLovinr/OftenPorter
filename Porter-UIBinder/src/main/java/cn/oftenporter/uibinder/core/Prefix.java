@@ -2,6 +2,7 @@ package cn.oftenporter.uibinder.core;
 
 
 import cn.oftenporter.porter.core.annotation.PortIn;
+import cn.oftenporter.porter.core.base.AppValues;
 import cn.oftenporter.porter.core.base.PortUtil;
 
 /**
@@ -24,39 +25,59 @@ public class Prefix
     public final ErrListener errListener;
 
     /**
-     * 绑定完成后用于调用的接口,且会传人view;只调用一次。
+     * 绑定完成后用于调用的接口,只调用一次。
      */
-    public final String bindCallbackMethod;
+    private String callbackMethod;
+
+    private AppValues callbackValues;
 
 
     @Override
     public String toString()
     {
-        return idPrefix + "" + pathPrefix + ",callback=" + bindCallbackMethod;
+        return idPrefix + "" + pathPrefix + ",callback=" + callbackMethod;
     }
 
     public static Prefix forDelete(String contextName, Class<?> clazz, boolean enableDefaultValue)
     {
-        return new Prefix(null, "/" + contextName + "/" + classTied(clazz, enableDefaultValue) + "/", null, null);
+        return new Prefix(null, "/" + contextName + "/" + classTied(clazz, enableDefaultValue) + "/", null);
     }
 
     public static Prefix forDelete(String porterPrefix)
     {
-        return new Prefix(null, porterPrefix, null, null);
+        return new Prefix(null, porterPrefix, null);
     }
 
     /**
-     * @param idPrefix           代表id的内容前缀
-     * @param pathPrefix         调用的接口路径前缀
-     * @param bindCallbackMethod 绑定完成后用于调用的接口。
-     * @param errListener        错误监听器
+     * @param idPrefix    代表id的内容前缀
+     * @param pathPrefix  调用的接口路径前缀
+     * @param errListener 错误监听器
      */
-    public Prefix(String idPrefix, String pathPrefix, String bindCallbackMethod, ErrListener errListener)
+    public Prefix(String idPrefix, String pathPrefix, ErrListener errListener)
     {
         this.idPrefix = idPrefix;
         this.pathPrefix = pathPrefix;
-        this.bindCallbackMethod = bindCallbackMethod;
         this.errListener = errListener;
+    }
+
+    public String getCallbackMethod()
+    {
+        return callbackMethod;
+    }
+
+    public void setCallbackMethod(String callbackMethod)
+    {
+        this.callbackMethod = callbackMethod;
+    }
+
+    public AppValues getCallbackValues()
+    {
+        return callbackValues;
+    }
+
+    public void setCallbackValues(AppValues callbackValues)
+    {
+        this.callbackValues = callbackValues;
     }
 
     private static String classTied(Class<?> clazz, boolean enableDefaultValue)
@@ -76,8 +97,7 @@ public class Prefix
      * <pre>
      *     绑定名为："TiedName"
      *     1.idPrefix:"tiedName_"
-     *     2.porterPrefix:"/TiedName/"
-     *     3.callback:{@linkplain BinderDefault#CALLBACK}
+     *     2.pathPrefix:"/contextName/TiedName/"
      * </pre>
      *
      * @param c                  接口类
@@ -89,7 +109,7 @@ public class Prefix
         String tied = classTied(c, enableDefaultValue);
         Prefix prefix = new Prefix(
                 tied.substring(0, 1).toLowerCase() + tied.substring(1) + "_",
-                "/" + contextName + "/" + tied + "/", BinderDefault.CALLBACK, null);
+                "/" + contextName + "/" + tied + "/", null);
         return prefix;
     }
 

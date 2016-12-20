@@ -168,7 +168,7 @@ class UINamesOccurStore
 
         }
 
-        // binder.onInitOk();
+        binder.onInitOk();
 
     }
 

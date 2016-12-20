@@ -13,18 +13,18 @@ public class Context
     public final PortContext portContext;
     CheckPassable[] contextChecks;
     InnerContextBridge innerContextBridge;
-    Delivery delivery;
+    DeliveryBuilder deliveryBuilder;
     ParamSourceHandleManager paramSourceHandleManager;
     public final StateListener stateListenerForAll;
 
     boolean isEnable = true;
     String name, contentEncoding;
 
-    public Context(Delivery delivery, PortContext portContext, CheckPassable[] contextChecks,
+    public Context(DeliveryBuilder deliveryBuilder, PortContext portContext, CheckPassable[] contextChecks,
             ParamSourceHandleManager paramSourceHandleManager,
             StateListener stateListenerForAll, InnerContextBridge innerContextBridge)
     {
-        this.delivery = delivery;
+        this.deliveryBuilder = deliveryBuilder;
         this.portContext = portContext;
         this.contextChecks = contextChecks;
         this.paramSourceHandleManager = paramSourceHandleManager;

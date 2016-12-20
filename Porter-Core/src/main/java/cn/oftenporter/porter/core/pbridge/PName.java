@@ -7,7 +7,7 @@ import cn.oftenporter.porter.core.base.PortUtil;
  */
 public class PName
 {
-    private String name;
+    private final String name;
 
     public PName(String name)
     {
@@ -20,7 +20,7 @@ public class PName
         this.name = name;
     }
 
-    public String getName()
+    public final String getName()
     {
         return name;
     }

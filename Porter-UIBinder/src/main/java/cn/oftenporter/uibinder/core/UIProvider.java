@@ -15,6 +15,7 @@ public abstract class UIProvider
     private static AtomicInteger atomicInteger = new AtomicInteger();
     private int id;
     private Delivery delivery;
+    private String idString;
 
     /**
      * @param prefix 接口参数
@@ -24,6 +25,12 @@ public abstract class UIProvider
         setErrListener(prefix.errListener);
         this.prefix = prefix;
         id = atomicInteger.incrementAndGet();
+    }
+
+    public UIProvider(Prefix prefix, String idString)
+    {
+        this(prefix);
+        setIdString(idString);
     }
 
     void setDelivery(Delivery delivery)
@@ -39,6 +46,16 @@ public abstract class UIProvider
     public int getId()
     {
         return id;
+    }
+
+    public String getIdString()
+    {
+        return idString;
+    }
+
+    public void setIdString(String idString)
+    {
+        this.idString = idString;
     }
 
     public Prefix getPrefix()

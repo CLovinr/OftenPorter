@@ -54,6 +54,11 @@ public class PortContext
         return this;
     }
 
+    public ClassLoader getClassLoader()
+    {
+        return classLoader;
+    }
+
     public void initSeek(PorterConf porterConf, InnerContextBridge innerContextBridge)
     {
         SthDeal sthDeal = new SthDeal();

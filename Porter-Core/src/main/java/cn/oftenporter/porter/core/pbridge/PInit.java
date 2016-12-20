@@ -1,5 +1,7 @@
 package cn.oftenporter.porter.core.pbridge;
 
+import cn.oftenporter.porter.core.PorterAttr;
+
 /**
  * @author Created by https://github.com/CLovinr on 2016/9/18.
  */
@@ -62,6 +64,17 @@ public interface PInit extends Delivery
     void receiveLink(PInit init, LinkListener linkListener);
 
     /**
+     * 得到链接的PInit。
+     * @param pName
+     * @return
+     */
+    PInit getLinkedPInit(String pName);
+
+
+    void setPorterAttr(PorterAttr porterAttr);
+    PorterAttr getPorterAttr();
+
+    /**
      * 连接两个框架实例。
      *
      * @param it        被添加的框架实例（it）
@@ -70,7 +83,7 @@ public interface PInit extends Delivery
     void link(PInit it, Direction direction);
 
     /**
-     * 关闭。
+     * 关闭,会断开所有链接。
      */
     void close();
 

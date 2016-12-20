@@ -1,7 +1,9 @@
 package cn.oftenporter.uibinder.core;
 
 import cn.oftenporter.porter.core.JResponse;
+import cn.oftenporter.porter.core.base.AppValues;
 import cn.oftenporter.porter.core.init.CommonMain;
+import cn.oftenporter.porter.core.pbridge.PRequest;
 
 import java.util.*;
 
@@ -89,9 +91,15 @@ public class UIBinderManager implements BinderDataSender
         return fireBlock;
     }
 
+    /**
+     * 进行ui绑定。
+     *
+     * @param uiProvider
+     */
     public synchronized void bind(UIProvider uiProvider)
     {
-        if(uiProvider.getErrListener()==null){
+        if (uiProvider.getErrListener() == null)
+        {
             uiProvider.setErrListener(errListener);
         }
         uiProvider.setDelivery(commonMain.getPInit());
@@ -105,8 +113,20 @@ public class UIBinderManager implements BinderDataSender
             uiMap.put(prefix.pathPrefix, list);
         }
         list.add(uiNamesOccurStore);
+        AppValues callbackValues = prefix.getCallbackValues();
+        if (prefix.getCallbackMethod() != null)
+        {
+            commonMain.getPInit().currentBridge()
+                    .request(new PRequest(prefix.pathPrefix + prefix.getCallbackMethod()).addParamAll(callbackValues),
+                            null);
+        }
     }
 
+    /**
+     * 清理指定prefix的所有绑定。
+     *
+     * @param deletePrefix
+     */
     public synchronized void delete(Prefix deletePrefix)
     {
         List<UINamesOccurStore> list = uiMap.remove(deletePrefix.pathPrefix);
@@ -119,6 +139,37 @@ public class UIBinderManager implements BinderDataSender
         }
     }
 
+    /**
+     * 清理指定prefix的指定id的绑定。
+     *
+     * @param deletePrefix
+     * @param idString
+     */
+    public synchronized void delete(Prefix deletePrefix, String idString)
+    {
+        if (idString == null)
+        {
+            return;
+        }
+        List<UINamesOccurStore> list = uiMap.get(deletePrefix.pathPrefix);
+        if (list != null)
+        {
+            for (int i = 0; i < list.size(); i++)
+            {
+                UINamesOccurStore aList = list.get(i);
+                if (idString.equals(aList.uiProvider.getIdString()))
+                {
+                    aList.clear();
+                    list.remove(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * 清理所有的。
+     */
     public synchronized void clear()
     {
         Iterator<List<UINamesOccurStore>> iterator = uiMap.values().iterator();

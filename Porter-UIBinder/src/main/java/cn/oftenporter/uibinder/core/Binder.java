@@ -20,13 +20,15 @@ public abstract class Binder<T> implements Cloneable
         this.view = view;
     }
 
-    /**
-     * 设置一些绑定名等,只针对于非触发Binder
-     */
+
     protected final void set(IdDeal.Result result, PorterOccur porterOccur)
     {
         this.result = result;
         this.porterOccur = porterOccur;
+    }
+
+    protected void onInitOk(){
+
     }
 
 

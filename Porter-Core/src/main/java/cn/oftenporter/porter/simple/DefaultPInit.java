@@ -1,6 +1,7 @@
 package cn.oftenporter.porter.simple;
 
 import cn.oftenporter.porter.core.JResponse;
+import cn.oftenporter.porter.core.PorterAttr;
 import cn.oftenporter.porter.core.ResultCode;
 import cn.oftenporter.porter.core.pbridge.*;
 import org.slf4j.Logger;
@@ -22,10 +23,12 @@ public class DefaultPInit implements PInit
     private LinkListener linkListener;
     private Map<PName, LinkListener> listenerMap;
 
+    //<PName,PPath>
     private Map<String, PPath> pathMap;
     private static final Object LOCK = new Object();
     private PBridge toAll;
     private boolean isClosed = false;
+    private PorterAttr porterAttr;
 
     private static class Response extends PResponse
     {
@@ -149,6 +152,25 @@ public class DefaultPInit implements PInit
         }
     }
 
+    @Override
+    public PInit getLinkedPInit(String pName)
+    {
+        PPath path = pathMap.get(pName);
+        return path == null ? null : path.pInit;
+    }
+
+    @Override
+    public void setPorterAttr(PorterAttr porterAttr)
+    {
+        this.porterAttr = porterAttr;
+    }
+
+    @Override
+    public PorterAttr getPorterAttr()
+    {
+        return this.porterAttr;
+    }
+
     //警告提示重复添加
     private void putPath(PPath path)
     {
@@ -203,7 +225,7 @@ public class DefaultPInit implements PInit
     {
         synchronized (LOCK)
         {
-            LOGGER.debug("link [{}]:{}:[{}]",currentPName(),direction,it.currentPName());
+            LOGGER.debug("link [{}]:{}:[{}]", currentPName(), direction, it.currentPName());
             boolean sendMyGoPath = false;
             boolean sendMeMore = false;
             boolean addIt = false;
@@ -274,13 +296,24 @@ public class DefaultPInit implements PInit
     }
 
     @Override
-    public void close()
+    public synchronized void close()
     {
         isClosed = true;
+        Iterator<PPath> iterator = pathMap.values().iterator();
+        while (iterator.hasNext())
+        {
+            PPath pPath = iterator.next();
+            if (!pPath.pInit.isClosed())
+            {
+                pPath.pInit.receiveLink(this, null);
+            }
+        }
+        pathMap.clear();
+        listenerMap.clear();
     }
 
     @Override
-    public boolean isClosed()
+    public synchronized boolean isClosed()
     {
         return isClosed;
     }

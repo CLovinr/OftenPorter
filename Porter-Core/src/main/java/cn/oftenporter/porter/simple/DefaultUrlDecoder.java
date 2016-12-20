@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 简单的地址解析器。
+ * 简单的地址解析器:/contextName/classTied/funTied?name1=value1&name2=value2
  * Created by https://github.com/CLovinr on 2016/9/2.
  */
 public class DefaultUrlDecoder implements UrlDecoder

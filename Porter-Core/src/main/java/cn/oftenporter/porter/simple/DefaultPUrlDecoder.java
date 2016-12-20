@@ -3,6 +3,7 @@ package cn.oftenporter.porter.simple;
 import cn.oftenporter.porter.core.pbridge.PUrlDecoder;
 
 /**
+ * 格式“:pName/path”
  * @author Created by https://github.com/CLovinr on 2016/9/18.
  */
 public class DefaultPUrlDecoder implements PUrlDecoder

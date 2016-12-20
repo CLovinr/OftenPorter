@@ -5,6 +5,7 @@ import cn.oftenporter.porter.core.base.WObject;
 import cn.oftenporter.porter.core.base.WRequest;
 import cn.oftenporter.porter.core.base.WResponse;
 import cn.oftenporter.porter.core.pbridge.Delivery;
+import cn.oftenporter.porter.core.pbridge.PName;
 
 
 /**
@@ -18,9 +19,12 @@ class WObjectImpl extends WObject
     Object[] finObjs, cinObjs;
 
     private Context context;
+    private PName pName;
+    private Delivery delivery;
 
-    WObjectImpl(UrlDecoder.Result result, WRequest request, WResponse response, Context context)
+    WObjectImpl(PName pName, UrlDecoder.Result result, WRequest request, WResponse response, Context context)
     {
+        this.pName = pName;
         this.result = result;
         this.request = request;
         this.response = response;
@@ -40,7 +44,13 @@ class WObjectImpl extends WObject
     }
 
     @Override
-    public <T> T finObject( int index)
+    public PName getPName()
+    {
+        return pName;
+    }
+
+    @Override
+    public <T> T finObject(int index)
     {
         Object obj = finObjs[index];
         T t = (T) obj;
@@ -74,7 +84,17 @@ class WObjectImpl extends WObject
     @Override
     public Delivery delivery()
     {
-        return context.delivery;
+        if (delivery == null)
+        {
+            synchronized (this)
+            {
+                if (delivery == null)
+                {
+                    delivery = context.deliveryBuilder.build(this);
+                }
+            }
+        }
+        return delivery;
     }
 
     @Override
