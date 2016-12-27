@@ -53,6 +53,12 @@ public @interface PortIn
     PortMethod method() default PortMethod.DEFAULT;
 
     /**
+     * 是否忽略类型转换。默认为false。当为true时，将跳过{@linkplain cn.oftenporter.porter.core.base.ITypeParser}转换。
+     * @return
+     */
+    boolean ignoreTypeParser()default false;
+
+    /**
      * 设置检测类型。会依此进行检测，有一个不通过则表示访问不通过。对应的类必须有无参构造函数。
      */
     Class<? extends CheckPassable>[] checks() default {};

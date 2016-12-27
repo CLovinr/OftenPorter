@@ -9,10 +9,12 @@ import cn.oftenporter.porter.core.util.WPTool;
 import cn.oftenporter.porter.simple.DefaultFailedReason;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.regex.Pattern;
+
 import cn.oftenporter.porter.core.base.InNames.Name;
 
 /**
@@ -153,12 +155,11 @@ public class PortUtil
     }
 
 
-
     /**
      * 返回结果不为null。
      * 返回{@linkplain ParamDealt.FailedReason}表示失败，否则成功。
      */
-    public static Object paramDealOne(ParamDealt paramDealt, One one,
+    public static Object paramDealOne(boolean ignoreTypeParser, ParamDealt paramDealt, One one,
             ParamSource paramSource,
             TypeParserStore currentTypeParserStore)
     {
@@ -167,7 +168,8 @@ public class PortUtil
         {
             Object[] neces = PortUtil.newArray(one.inNames.nece);
             Object[] unneces = PortUtil.newArray(one.inNames.unece);
-            Object reason = paramDeal(paramDealt, one.inNames, neces, unneces, paramSource, currentTypeParserStore);
+            Object reason = paramDeal(ignoreTypeParser, paramDealt, one.inNames, neces, unneces, paramSource,
+                    currentTypeParserStore);
             if (reason == null)
             {
                 Object object = WPTool.newObject(one.clazz);
@@ -203,18 +205,34 @@ public class PortUtil
      *
      * @return 返回null表示转换成功，否则表示失败。
      */
-    public static ParamDealt.FailedReason paramDeal(ParamDealt paramDealt, InNames inNames, Object[] nece,
+    public static ParamDealt.FailedReason paramDeal(boolean ignoreTypeParser, ParamDealt paramDealt, InNames inNames,
+            Object[] nece,
             Object[] unnece,
             ParamSource paramSource,
             TypeParserStore currentTypeParserStore)
     {
-        ParamDealt.FailedReason reason;
+        ParamDealt.FailedReason reason=null;
         try
         {
-            reason = paramDealt.deal(inNames.nece, nece, true, paramSource, currentTypeParserStore);
-            if (reason == null)
+            if (ignoreTypeParser)
             {
-                reason = paramDealt.deal(inNames.unece, unnece, false, paramSource, currentTypeParserStore);
+                Name[] names = inNames.nece;
+                for (int i = 0; i < nece.length; i++)
+                {
+                    nece[i] = paramSource.getParam(names[i].varName);
+                }
+                names = inNames.unece;
+                for (int i = 0; i < unnece.length; i++)
+                {
+                    unnece[i] = paramSource.getParam(names[i].varName);
+                }
+            } else
+            {
+                reason = paramDealt.deal(inNames.nece, nece, true, paramSource, currentTypeParserStore);
+                if (reason == null)
+                {
+                    reason = paramDealt.deal(inNames.unece, unnece, false, paramSource, currentTypeParserStore);
+                }
             }
         } catch (Exception e)
         {

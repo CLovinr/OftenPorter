@@ -16,5 +16,10 @@ public enum DuringType
     /**
      * 函数参数已经准备完成。
      */
-    METHOD
+    METHOD,
+
+    /**
+     * 调用完后,{@linkplain CheckPassable#willPass(WObject, DuringType, Aspect)}的Aspect不为空。
+     */
+    INVOKED
 }

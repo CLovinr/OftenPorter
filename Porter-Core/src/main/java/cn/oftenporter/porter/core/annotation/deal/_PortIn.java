@@ -14,6 +14,7 @@ public final class _PortIn
     Class<? extends CheckPassable>[] checks;
     TiedType tiedType;
     boolean isMultiTiedType;
+    boolean ignoreTypeParser;
 
     public void setTiedType(TiedType tiedType)
     {
@@ -48,5 +49,10 @@ public final class _PortIn
     public String getTiedName()
     {
         return tiedName;
+    }
+
+    public boolean ignoreTypeParser()
+    {
+        return ignoreTypeParser;
     }
 }

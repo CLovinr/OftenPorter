@@ -223,7 +223,8 @@ public class PortExecutor
 
         //类参数处理
         ParamDealt.FailedReason failedReason = PortUtil
-                .paramDeal(innerContextBridge.paramDealt, inNames, wObject.cn, wObject.cu, paramSource,
+                .paramDeal(clazzPIn.ignoreTypeParser(), innerContextBridge.paramDealt, inNames, wObject.cn, wObject.cu,
+                        paramSource,
                         typeParserStore);
         if (failedReason != null)
         {
@@ -234,7 +235,8 @@ public class PortExecutor
 
         ///////////////////////////
         //转换成类或接口对象
-        failedReason = paramDealOfPortInObj(context, classPort.getInObj(), true, wObject, paramSource, typeParserStore);
+        failedReason = paramDealOfPortInObj(clazzPIn.ignoreTypeParser(), context, classPort.getInObj(), true, wObject,
+                paramSource, typeParserStore);
         if (failedReason != null)
         {
             exParamDeal(wObject, failedReason, responseWhenException);
@@ -244,11 +246,14 @@ public class PortExecutor
 
 
         //类通过检测
-        rs = willPass(context, clazzPIn.getChecks(), wObject, DuringType.CLASS);
-        if (rs != null)
+        if (clazzPIn.getChecks().length > 0)
         {
-            exCheckPassable(wObject, rs, responseWhenException);
-            return;
+            rs = willPass(context, clazzPIn.getChecks(), wObject, DuringType.CLASS, null);
+            if (rs != null)
+            {
+                exCheckPassable(wObject, rs, responseWhenException);
+                return;
+            }
         }
 
         //////////////////////////
@@ -276,7 +281,8 @@ public class PortExecutor
         //函数参数处理
 
         failedReason = PortUtil
-                .paramDeal(innerContextBridge.paramDealt, inNames, wObject.fn, wObject.fu, paramSource,
+                .paramDeal(funPIn.ignoreTypeParser(), innerContextBridge.paramDealt, inNames, wObject.fn, wObject.fu,
+                        paramSource,
                         typeParserStore);
         if (failedReason != null)
         {
@@ -285,7 +291,8 @@ public class PortExecutor
         }
         ///////////////////////////
         //转换成类或接口对象
-        failedReason = paramDealOfPortInObj(context, funPort.getInObj(), false, wObject, paramSource, typeParserStore);
+        failedReason = paramDealOfPortInObj(funPIn.ignoreTypeParser(), context, funPort.getInObj(), false, wObject,
+                paramSource, typeParserStore);
         if (failedReason != null)
         {
             exParamDeal(wObject, failedReason, responseWhenException);
@@ -295,22 +302,56 @@ public class PortExecutor
 
 
         //函数通过检测
-        rs = willPass(context, funPIn.getChecks(), wObject, DuringType.METHOD);
-        if (rs != null)
+        if (funPIn.getChecks().length > 0)
         {
-            exCheckPassable(wObject, rs, responseWhenException);
-            return;
+            rs = willPass(context, funPIn.getChecks(), wObject, DuringType.METHOD, null);
+            if (rs != null)
+            {
+                exCheckPassable(wObject, rs, responseWhenException);
+                return;
+            }
         }
 
         Method javaMethod = funPort.getMethod();
 
-        if (funPort.getArgCount() == 0)
+        try
         {
-            rs = javaMethod.invoke(classPort.getObject());
-        } else
+            if (funPort.getArgCount() == 0)
+            {
+                rs = javaMethod.invoke(classPort.getObject());
+            } else
+            {
+                rs = javaMethod.invoke(classPort.getObject(), wObject);
+            }
+            if (funPIn.getChecks().length > 0)
+            {
+                Object object = willPass(context, funPIn.getChecks(), wObject, DuringType.METHOD, new Aspect(rs));
+                if (object != null)
+                {
+                    exCheckPassable(wObject, object, responseWhenException);
+                    return;
+                }
+            }
+        } catch (Exception e)
         {
-            rs = javaMethod.invoke(classPort.getObject(), wObject);
+            if (funPIn.getChecks().length > 0)
+            {
+                Throwable cause = e.getCause();
+                rs = willPass(context, funPIn.getChecks(), wObject, DuringType.METHOD, new Aspect(cause));
+                if (rs != null)
+                {
+                    exCheckPassable(wObject, rs, responseWhenException);
+                } else
+                {
+                    close(wObject);
+                }
+                return;
+            } else
+            {
+                throw e;
+            }
         }
+
         switch (funPort.getPortOut().getOutType())
         {
             case NoResponse:
@@ -332,7 +373,8 @@ public class PortExecutor
      * @param currentTypeParserStore
      * @return
      */
-    private ParamDealt.FailedReason paramDealOfPortInObj(Context context, InObj inObj, boolean isInClass,
+    private ParamDealt.FailedReason paramDealOfPortInObj(boolean ignoreTypeParser, Context context, InObj inObj,
+            boolean isInClass,
             WObjectImpl wObjectImpl,
             ParamSource paramSource, TypeParserStore currentTypeParserStore)
     {
@@ -354,7 +396,8 @@ public class PortExecutor
         {
             One one = ones[i];
             Object object = PortUtil
-                    .paramDealOne(context.innerContextBridge.paramDealt, one, paramSource, currentTypeParserStore);
+                    .paramDealOne(ignoreTypeParser, context.innerContextBridge.paramDealt, one, paramSource,
+                            currentTypeParserStore);
             if (object instanceof ParamDealt.FailedReason)
             {
                 return (ParamDealt.FailedReason) object;
@@ -367,13 +410,13 @@ public class PortExecutor
         return reason;
     }
 
-    private Object globalCheck(Context context, WObject wObject)
+    private final Object globalCheck(Context context, WObject wObject)
     {
         CheckPassable[] allGlobal = this.allGlobalChecks;
 
         for (int i = 0; i < allGlobal.length; i++)
         {
-            Object rs = allGlobal[i].willPass(wObject, DuringType.GLOBAL);
+            Object rs = allGlobal[i].willPass(wObject, DuringType.GLOBAL, null);
             if (rs != null)
             {
                 return rs;
@@ -383,7 +426,7 @@ public class PortExecutor
         CheckPassable[] contextChecks = context.contextChecks;
         for (int i = 0; i < contextChecks.length; i++)
         {
-            Object rs = contextChecks[i].willPass(wObject, DuringType.GLOBAL);
+            Object rs = contextChecks[i].willPass(wObject, DuringType.GLOBAL, null);
             if (rs != null)
             {
                 return rs;
@@ -396,13 +439,13 @@ public class PortExecutor
      * 通过检测
      */
     private Object willPass(Context context, Class<? extends CheckPassable>[] cps, WObject wObject,
-            DuringType type)
+            DuringType type, Aspect aspect)
     {
         PortContext portContext = context.portContext;
         for (int i = 0; i < cps.length; i++)
         {
             CheckPassable cp = portContext.getCheckPassable(cps[i]);
-            Object rs = cp.willPass(wObject, type);
+            Object rs = cp.willPass(wObject, type, aspect);
             if (rs != null)
             {
                 return rs;
@@ -438,7 +481,7 @@ public class PortExecutor
 ////////////////////////////////////////////////
     //////////////////////////////////////////
 
-    private void close(WObject wObject)
+    private final void close(WObject wObject)
     {
         WPTool.close(wObject.getResponse());
     }

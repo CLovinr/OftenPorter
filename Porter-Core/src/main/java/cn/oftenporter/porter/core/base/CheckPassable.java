@@ -15,5 +15,5 @@ public interface CheckPassable
      * @param type    检测的时期
      * @return 返回null表示通过，不为null（错误信息）表示无法通过。
      */
-    Object willPass(WObject wObject, DuringType type);
+    Object willPass(WObject wObject, DuringType type,Aspect aspect);
 }

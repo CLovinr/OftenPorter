@@ -192,18 +192,19 @@ public final class AnnotationDealt
 
     public _PortIn portIn(Class<?> clazz)
     {
-        PortIn in = clazz.getAnnotation(PortIn.class);
-        if (in == null)
+        PortIn portIn = clazz.getAnnotation(PortIn.class);
+        if (portIn == null)
         {
             return null;
         }
         _PortIn _portIn = new _PortIn();
-        _portIn.tiedName = PortUtil.tied(in, clazz, enableDefaultValue);
-        _portIn.inNames = InNames.fromStringArray(in.nece(), in.unnece(), in.inner());
-        _portIn.method = in.method();
-        _portIn.checks = in.checks();
-        _portIn.tiedType = in.tiedType();
-        _portIn.isMultiTiedType = in.multiTiedType();
+        _portIn.tiedName = PortUtil.tied(portIn, clazz, enableDefaultValue);
+        _portIn.inNames = InNames.fromStringArray(portIn.nece(), portIn.unnece(), portIn.inner());
+        _portIn.method = portIn.method();
+        _portIn.checks = portIn.checks();
+        _portIn.tiedType = portIn.tiedType();
+        _portIn.isMultiTiedType = portIn.multiTiedType();
+        _portIn.ignoreTypeParser=portIn.ignoreTypeParser();
 
         LOGGER.debug("tiedName={},tiedType={},method={}", _portIn.tiedName, _portIn.tiedType, _portIn.method);
 
@@ -230,7 +231,7 @@ public final class AnnotationDealt
             _portIn.inNames = InNames.fromStringArray(portIn.nece(), portIn.unnece(), portIn.inner());
             _portIn.checks = portIn.checks();
             _portIn.method = AnnoUtil.method(class_PortIn.getMethod(), portIn.method());
-
+            _portIn.ignoreTypeParser=portIn.ignoreTypeParser();
 
         }
         return _portIn;

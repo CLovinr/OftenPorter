@@ -92,7 +92,7 @@ public class TestLocalMain
         porterConf.addContextCheck(new CheckPassable()
         {
             @Override
-            public Object willPass(WObject wObject, DuringType type)
+            public Object willPass(WObject wObject, DuringType type,Aspect aspect)
             {
                 //logger.debug("");
                 return null;
